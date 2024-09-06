@@ -35,32 +35,29 @@ public class User extends BaseEntity {
   @Column(columnDefinition = "TEXT")
   private String introduce;
 
-  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "profileImageId")
   private ProfileImage profileImage;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Post> posts;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Bookmark> bookmarks;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Comment> comments;
 
-  @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval =
-  true)
+  @OneToMany(mappedBy = "follower", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Follow> following;
 
-  @OneToMany(mappedBy = "following", cascade = CascadeType.ALL, orphanRemoval =
-  true)
+  @OneToMany(mappedBy = "following", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Follow> followers;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval =
-  true)
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ChatMembers> chatRooms;
 
-  @ManyToMany(mappedBy = "likedByUsers")
+  @ManyToMany(mappedBy = "likedByUsers", fetch = FetchType.LAZY)
   private List<Post> likedPosts;
 
   protected User() {

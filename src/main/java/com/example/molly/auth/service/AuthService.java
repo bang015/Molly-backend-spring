@@ -1,10 +1,8 @@
 package com.example.molly.auth.service;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.molly.auth.dto.JwtToken;
-import com.example.molly.auth.dto.SignInRequest;
 import com.example.molly.auth.dto.SignUpRequest;
 import com.example.molly.auth.entity.Verification;
 import com.example.molly.auth.repository.AuthRepository;
@@ -24,7 +22,6 @@ public class AuthService {
   private final AuthRepository authRepository;
   private final UserRepository userRepository;
   private final JwtTokenProvider jwtTokenProvider;
-  private final PasswordEncoder passwordEncoder;
 
   // 인증번호 생성
   @Transactional
@@ -71,18 +68,10 @@ public class AuthService {
     try {
       userRepository.save(user);
       authRepository.deleteByEmail(signUpRequest.getEmail());
-      return jwtTokenProvider.generateToken(signUpRequest.getEmail());
+      return jwtTokenProvider.generateToken(user.getId());
     } catch (Exception e) {
       System.out.println(e);
       throw new RuntimeException("회원가입에 실패했습니다.");
     }
-  }
-
-  // 로그인
-  public JwtToken signIn(SignInRequest signInRequest) {
-    User user = userRepository.findByEmail(signInRequest.getEmail())
-        .filter(u -> passwordEncoder.matches(signInRequest.getPassword(), u.getPassword()))
-        .orElseThrow(() -> new RuntimeException("이메일 또는 비밀번호가 틀렸습니다."));
-    return jwtTokenProvider.generateToken(user.getEmail());
   }
 }

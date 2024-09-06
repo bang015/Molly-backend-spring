@@ -8,9 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import com.example.molly.auth.dto.JwtToken;
+import com.example.molly.auth.service.CustomUserDetailsService;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -21,15 +22,16 @@ public class JwtTokenProvider {
   private final Key key;
 
   @Autowired
-  private UserDetailsService userDetailsService;
+  private CustomUserDetailsService userDetailsService;
 
   public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
     byte[] keyBytes = Decoders.BASE64.decode(secretKey);
     this.key = Keys.hmacShaKeyFor(keyBytes);
   }
 
-  public JwtToken generateToken(String username) {
-    Claims claims = Jwts.claims().setSubject(username);
+  public JwtToken generateToken(Long userId) {
+    System.out.println("Key:" + key);
+    Claims claims = Jwts.claims().setSubject(userId.toString());
     long now = (new Date()).getTime();
     String accessToken = Jwts.builder().setClaims(claims)
         .setExpiration(new Date(now + 8640000)).signWith(key).compact();
@@ -44,7 +46,8 @@ public class JwtTokenProvider {
 
   public Authentication getAuthentication(String accessToken) {
     Claims claims = getClaims(accessToken);
-    UserDetails userDetails = userDetailsService.loadUserByUsername(claims.getSubject());
+    Long userId = Long.valueOf(claims.getSubject());
+    UserDetails userDetails = userDetailsService.loadUserById(userId);
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
   }
 
