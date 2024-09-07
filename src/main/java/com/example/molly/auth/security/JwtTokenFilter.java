@@ -1,9 +1,9 @@
 package com.example.molly.auth.security;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,7 +17,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
   private final JwtTokenProvider jwtTokenProvider;
 
   @Override
-  public void doFilterInternal(HttpServletRequest requset, HttpServletResponse response, FilterChain chain)
+  public void doFilterInternal(@NonNull HttpServletRequest requset, @NonNull HttpServletResponse response,
+      @NonNull FilterChain chain)
       throws IOException, ServletException {
     String token = resolveToken((HttpServletRequest) requset);
 

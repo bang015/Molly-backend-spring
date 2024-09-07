@@ -8,11 +8,11 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class SuggestFollowersDTO extends UserResponseDTO {
+public class FollowResponseDTO extends UserResponseDTO {
   private String message;
   private boolean isFollowed = false;
 
-  public SuggestFollowersDTO(User user, String message, boolean isFollowed) {
+  public FollowResponseDTO(User user, String message, boolean isFollowed) {
     super(user);
     this.message = message;
     this.isFollowed = isFollowed;
