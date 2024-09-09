@@ -78,7 +78,6 @@ public class FollowService {
     HashMap<String, Object> result = new HashMap<>();
     result.put("followings", followings);
     result.put("totalPages", followPage.getTotalPages());
-    System.out.println(result);
     return result;
   }
 }

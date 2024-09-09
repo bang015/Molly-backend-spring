@@ -18,10 +18,15 @@ public class PostController {
 
   @GetMapping("/main/")
   public ResponseEntity<?> getMainPosts(@RequestParam int page, @RequestParam(defaultValue = "5") int limit) {
-    System.out.println("page:" + page);
     Long userId = SecurityUtil.getCurrentUserId();
     PostResponseDTO result = postService.getMainPost(userId, page, limit);
-    System.out.println(result);
+    return ResponseEntity.ok(result);
+  }
+
+  @GetMapping
+  public ResponseEntity<?> getExplorePosts(@RequestParam int page, @RequestParam(defaultValue = "5") int limit) {
+    Long userId = SecurityUtil.getCurrentUserId();
+    PostResponseDTO result = postService.getExplorePost(userId, page, limit);
     return ResponseEntity.ok(result);
   }
 

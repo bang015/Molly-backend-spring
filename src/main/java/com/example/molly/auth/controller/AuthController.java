@@ -64,7 +64,6 @@ public class AuthController {
       @RequestParam(value = "nickname", required = false) String nickname) {
     if (email != null && !email.isEmpty()) {
       User emailExists = userService.findUserByEmail(email);
-      System.out.println(emailExists);
       return emailExists != null ? ResponseEntity.ok("이미 사용중인 이메일입니다.")
           : ResponseEntity.status(204).body("사용가능한 이메일입니다.");
     }

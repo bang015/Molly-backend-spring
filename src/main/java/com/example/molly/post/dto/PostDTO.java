@@ -9,6 +9,7 @@ import lombok.Data;
 
 @Data
 public class PostDTO {
+  private long id;
   private String content;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
@@ -16,6 +17,7 @@ public class PostDTO {
   private List<PostMediaDTO> postMedias;
 
   public PostDTO(Post post) {
+    this.id = post.getId();
     this.content = post.getContent();
     this.createdAt = post.getCreatedAt();
     this.updatedAt = post.getUpdatedAt();

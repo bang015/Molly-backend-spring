@@ -70,7 +70,6 @@ public class AuthService {
       authRepository.deleteByEmail(signUpRequest.getEmail());
       return jwtTokenProvider.generateToken(user.getId());
     } catch (Exception e) {
-      System.out.println(e);
       throw new RuntimeException("회원가입에 실패했습니다.");
     }
   }

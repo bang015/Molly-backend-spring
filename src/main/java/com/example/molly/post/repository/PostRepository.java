@@ -16,4 +16,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   @Query("SELECT p FROM Post p WHERE p.user.id IN :userIds ORDER BY p.createdAt DESC")
   Page<Post> findPostsByUserIds(@Param("userIds") List<Long> userIds, Pageable pageable);
+
+  @Query("SELECT p FROM Post p WHERE p.user.id NOT IN :excludedUserIds ORDER BY p.createdAt DESC")
+  Page<Post> findPostsByUserIdsNotIn(@Param("excludedUserIds") List<Long> excludedUserIds, Pageable pageable);
 }

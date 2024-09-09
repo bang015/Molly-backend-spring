@@ -29,7 +29,6 @@ public class UserService {
   }
 
   public UserResponseDTO getUser(Long userId) {
-    System.out.println("UserId:" + userId);
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("유저 정보를 찾지 못했습니다."));
     UserResponseDTO userDto = new UserResponseDTO(user);
     long postCount = postRepository.countByUser(user);

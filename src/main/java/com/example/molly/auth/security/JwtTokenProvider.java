@@ -30,7 +30,6 @@ public class JwtTokenProvider {
   }
 
   public JwtToken generateToken(Long userId) {
-    System.out.println("Key:" + key);
     Claims claims = Jwts.claims().setSubject(userId.toString());
     long now = (new Date()).getTime();
     String accessToken = Jwts.builder().setClaims(claims)

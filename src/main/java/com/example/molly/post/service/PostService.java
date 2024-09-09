@@ -27,4 +27,13 @@ public class PostService {
     List<PostDTO> postList = posts.stream().map(PostDTO::new).collect(Collectors.toList());
     return new PostResponseDTO(postList, posts.getTotalPages());
   }
+
+  public PostResponseDTO getExplorePost(Long userId, int page, int limit) {
+    List<Long> followedUserIds = followRepository.findFollowerUserIds(userId);
+    followedUserIds.add(userId);
+    Pageable pageable = PageRequest.of(page - 1, limit);
+    Page<Post> posts = postRepository.findPostsByUserIdsNotIn(followedUserIds, pageable);
+    List<PostDTO> postList = posts.stream().map(PostDTO::new).collect(Collectors.toList());
+    return new PostResponseDTO(postList, posts.getTotalPages());
+  }
 }
