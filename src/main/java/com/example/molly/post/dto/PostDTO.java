@@ -15,13 +15,19 @@ public class PostDTO {
   private LocalDateTime updatedAt;
   private UserResponseDTO user;
   private List<PostMediaDTO> postMedias;
+  private boolean isLiked;
+  private long likeCount;
+  private boolean isBookmarked;
 
-  public PostDTO(Post post) {
+  public PostDTO(Post post, boolean isLiked, long likeCount, boolean isBookmarked) {
     this.id = post.getId();
     this.content = post.getContent();
     this.createdAt = post.getCreatedAt();
     this.updatedAt = post.getUpdatedAt();
     this.user = post.getUser() != null ? new UserResponseDTO(post.getUser()) : null;
     this.postMedias = post.getPostMedias().stream().map(PostMediaDTO::new).collect(Collectors.toList());
+    this.isLiked = isLiked;
+    this.likeCount = likeCount;
+    this.isBookmarked = isBookmarked;
   }
 }

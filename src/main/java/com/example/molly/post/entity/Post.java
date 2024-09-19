@@ -5,6 +5,7 @@ import java.util.List;
 import com.example.molly.bookmark.entity.Bookmark;
 import com.example.molly.comment.entity.Comment;
 import com.example.molly.common.BaseEntity;
+import com.example.molly.like.entity.Like;
 import com.example.molly.user.entity.User;
 
 import jakarta.persistence.*;
@@ -31,11 +32,11 @@ public class Post extends BaseEntity {
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Comment> comments;
 
+  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Like> likedByUsers;
+
   @ManyToMany
   @JoinTable(name = "PostTag", joinColumns = @JoinColumn(name = "postId"), inverseJoinColumns = @JoinColumn(name = "tagId"))
   private List<Tag> tags;
 
-  @ManyToMany
-  @JoinTable(name = "PostLike", joinColumns = @JoinColumn(name = "postId"), inverseJoinColumns = @JoinColumn(name = "userId"))
-  private List<User> likedByUsers;
 }

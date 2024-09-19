@@ -9,6 +9,7 @@ import com.example.molly.chat.entity.ChatMembers;
 import com.example.molly.comment.entity.Comment;
 import com.example.molly.common.BaseEntity;
 import com.example.molly.follow.entity.Follow;
+import com.example.molly.like.entity.Like;
 import com.example.molly.post.entity.Post;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -57,8 +58,8 @@ public class User extends BaseEntity {
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ChatMembers> chatRooms;
 
-  @ManyToMany(mappedBy = "likedByUsers", fetch = FetchType.LAZY)
-  private List<Post> likedPosts;
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Like> likedPosts;
 
   protected User() {
   }

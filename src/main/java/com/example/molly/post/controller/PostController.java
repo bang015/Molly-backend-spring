@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class PostController {
   private final PostService postService;
 
-  @GetMapping("/main/")
+  @GetMapping("/main")
   public ResponseEntity<?> getMainPosts(@RequestParam int page, @RequestParam(defaultValue = "5") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
     PostResponseDTO result = postService.getMainPost(userId, page, limit);

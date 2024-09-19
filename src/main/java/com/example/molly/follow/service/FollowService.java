@@ -19,6 +19,8 @@ import com.example.molly.follow.entity.Follow;
 import com.example.molly.follow.repository.FollowRepository;
 import com.example.molly.user.entity.User;
 import com.example.molly.user.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -29,6 +31,7 @@ public class FollowService {
   private final FollowRepository followRepository;
 
   // 팔로우/ 언팔로우
+  @Transactional
   public boolean follow(Long userId, Long targetUserId) {
     User follower = userRepository.findById(userId)
         .orElseThrow(() -> new RuntimeException("User not found"));
@@ -48,6 +51,7 @@ public class FollowService {
   }
 
   // 추천 팔로우 리스트
+  @Transactional
   public List<FollowResponseDTO> getSuggestFollowers(Long userId, int limit) {
     Pageable pageable = PageRequest.of(0, limit);
     List<User> suggestFollowers = userRepository.findUserNotFollwedByUser(userId, pageable);
@@ -61,6 +65,7 @@ public class FollowService {
   }
 
   // 팔로윙 리스트
+  @Transactional
   public Map<String, Object> getFollowings(Long userId, String query, int page) {
     Pageable pageable = PageRequest.of(page - 1, 12);
     Page<Follow> followPage = followRepository.findFollowingsByUserIdAndQuery(userId, query, pageable);
