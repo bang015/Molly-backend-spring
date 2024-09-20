@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +38,14 @@ public class FollowController {
     Long userId = SecurityUtil.getCurrentUserId();
     List<FollowResponseDTO> suggestFollowerList = followService.getSuggestFollowers(userId, limit);
     return ResponseEntity.ok(suggestFollowerList);
+  }
+
+  @GetMapping("/check/{targetUserId}")
+  public ResponseEntity<?> isFollwed(@PathVariable Long targetUserId) {
+    System.out.println(targetUserId);
+    Long userId = SecurityUtil.getCurrentUserId();
+    boolean isFollowed = followService.isFollowed(userId, targetUserId);
+    return ResponseEntity.ok(isFollowed);
   }
 
   @GetMapping("/following")

@@ -20,6 +20,7 @@ public class PostController {
   public ResponseEntity<?> getMainPosts(@RequestParam int page, @RequestParam(defaultValue = "5") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
     PostResponseDTO result = postService.getMainPost(userId, page, limit);
+    System.out.println(result);
     return ResponseEntity.ok(result);
   }
 

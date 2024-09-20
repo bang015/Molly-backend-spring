@@ -7,5 +7,7 @@ import com.example.molly.like.entity.Like;
 public interface LikeRepository extends JpaRepository<Like, Long> {
   boolean existsByUserIdAndPostId(Long userId, Long postId);
 
+  void deleteByUserIdAndPostId(Long userId, Long postId);
+
   long countByPostId(Long postId);
 }

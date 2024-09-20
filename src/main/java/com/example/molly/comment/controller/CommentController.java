@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.molly.comment.dto.CommentDTO;
+import com.example.molly.comment.dto.CommentResponse;
 import com.example.molly.comment.service.CommentService;
 import com.example.molly.common.util.SecurityUtil;
 
@@ -13,6 +14,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
@@ -23,9 +25,17 @@ public class CommentController {
 
   @GetMapping("/my")
   public ResponseEntity<?> getMyComment(@RequestParam Long postId) {
-    System.out.println(postId);
     Long userId = SecurityUtil.getCurrentUserId();
     List<CommentDTO> comments = commentService.getMyComment(userId, postId);
+    return ResponseEntity.ok(comments);
+  }
+
+  @GetMapping("/{postId}")
+  public ResponseEntity<?> getMethodName(@PathVariable Long postId, @RequestParam int page) {
+    System.out.println(page);
+    System.out.println(postId);
+    Long userId = SecurityUtil.getCurrentUserId();
+    CommentResponse comments = commentService.getComment(userId, postId, page);
     return ResponseEntity.ok(comments);
   }
 

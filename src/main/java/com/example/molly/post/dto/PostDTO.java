@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import com.example.molly.post.entity.Post;
 import com.example.molly.user.dto.UserResponseDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 @Data
@@ -15,8 +17,10 @@ public class PostDTO {
   private LocalDateTime updatedAt;
   private UserResponseDTO user;
   private List<PostMediaDTO> postMedias;
+  @JsonProperty("isLiked")
   private boolean isLiked;
   private long likeCount;
+  @JsonProperty("isBookmarked")
   private boolean isBookmarked;
 
   public PostDTO(Post post, boolean isLiked, long likeCount, boolean isBookmarked) {

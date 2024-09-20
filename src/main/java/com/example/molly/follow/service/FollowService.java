@@ -34,9 +34,9 @@ public class FollowService {
   @Transactional
   public boolean follow(Long userId, Long targetUserId) {
     User follower = userRepository.findById(userId)
-        .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
     User following = userRepository.findById(targetUserId)
-        .orElseThrow(() -> new RuntimeException("Target user not found"));
+        .orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
     Optional<Follow> followOptional = followRepository.findByFollowerAndFollowing(follower, following);
     if (followOptional.isPresent()) {
       followRepository.delete(followOptional.get());
@@ -50,8 +50,20 @@ public class FollowService {
     }
   }
 
+  public boolean isFollowed(Long userId, Long targetUserId) {
+    User follower = userRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
+    User following = userRepository.findById(targetUserId)
+        .orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
+    Optional<Follow> followOptional = followRepository.findByFollowerAndFollowing(follower, following);
+    if (followOptional.isPresent()) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   // 추천 팔로우 리스트
-  @Transactional
   public List<FollowResponseDTO> getSuggestFollowers(Long userId, int limit) {
     Pageable pageable = PageRequest.of(0, limit);
     List<User> suggestFollowers = userRepository.findUserNotFollwedByUser(userId, pageable);
@@ -65,7 +77,6 @@ public class FollowService {
   }
 
   // 팔로윙 리스트
-  @Transactional
   public Map<String, Object> getFollowings(Long userId, String query, int page) {
     Pageable pageable = PageRequest.of(page - 1, 12);
     Page<Follow> followPage = followRepository.findFollowingsByUserIdAndQuery(userId, query, pageable);
