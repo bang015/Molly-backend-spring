@@ -30,9 +30,7 @@ public class AuthService {
     try {
       authRepository.deleteByEmail(email);
       verificationCode = UUID.randomUUID().toString().substring(0, 6);
-      Verification verification = new Verification();
-      verification.setEmail(email);
-      verification.setCode(verificationCode);
+      Verification verification = Verification.builder().email(email).code(verificationCode).build();
       authRepository.save(verification);
       String subject = "Your Verification Code";
       String text = "인증번호: " + verificationCode;
@@ -64,7 +62,8 @@ public class AuthService {
   @Transactional
   public JwtToken createUser(SignUpRequest signUpRequest) {
     verificationCode(signUpRequest.getEmail(), signUpRequest.getCode());
-    User user = new User(signUpRequest);
+    User user = User.builder().email(signUpRequest.getEmail()).name(signUpRequest.getName())
+        .nickname(signUpRequest.getNickname()).password(signUpRequest.getPassword()).build();
     try {
       userRepository.save(user);
       authRepository.deleteByEmail(signUpRequest.getEmail());

@@ -19,7 +19,8 @@ public class CommentDTO {
 
   public CommentDTO(Comment comment, int count) {
     this.id = comment.getId();
-    this.commentId = comment.getParentComment().getId();
+    this.content = comment.getContent();
+    this.commentId = comment.getParentComment() != null ? comment.getParentComment().getId() : null;
     this.createdAt = comment.getCreatedAt();
     this.updatedAt = comment.getUpdatedAt();
     this.subCommentsCount = count;

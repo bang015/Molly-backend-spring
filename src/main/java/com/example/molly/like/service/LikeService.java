@@ -32,9 +32,7 @@ public class LikeService {
       likeRepository.deleteByUserIdAndPostId(userId, postId);
       return false;
     } else {
-      Like postLike = new Like();
-      postLike.setPost(post);
-      postLike.setUser(user);
+      Like postLike = Like.builder().post(post).user(user).build();
       likeRepository.save(postLike);
       return true;
     }

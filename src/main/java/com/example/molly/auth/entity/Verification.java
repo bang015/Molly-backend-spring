@@ -9,10 +9,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
-@Getter @Setter
+import lombok.NoArgsConstructor;
+
+@Getter
+@Builder
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 public class Verification extends BaseEntity {
   @Column(nullable = false)
   @Email(message = "이메일 형식이 아닙니다.")
@@ -22,12 +28,12 @@ public class Verification extends BaseEntity {
   @Column(nullable = false)
   @NotBlank(message = "인증번호를 입력해주세요.")
   private String code;
-  
+
   @Column(nullable = false)
   private LocalDateTime expiresAt;
 
   @PrePersist
-    public void prePersist() {
-        this.expiresAt = LocalDateTime.now().plusMinutes(10);
-    }
+  public void prePersist() {
+    this.expiresAt = LocalDateTime.now().plusMinutes(10);
+  }
 }

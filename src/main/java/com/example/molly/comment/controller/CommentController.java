@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.molly.comment.dto.CommentDTO;
+import com.example.molly.comment.dto.CommentRequest;
 import com.example.molly.comment.dto.CommentResponse;
 import com.example.molly.comment.service.CommentService;
 import com.example.molly.common.util.SecurityUtil;
@@ -16,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/comment")
@@ -31,12 +34,17 @@ public class CommentController {
   }
 
   @GetMapping("/{postId}")
-  public ResponseEntity<?> getMethodName(@PathVariable Long postId, @RequestParam int page) {
-    System.out.println(page);
-    System.out.println(postId);
+  public ResponseEntity<?> getComment(@PathVariable Long postId, @RequestParam int page) {
     Long userId = SecurityUtil.getCurrentUserId();
     CommentResponse comments = commentService.getComment(userId, postId, page);
     return ResponseEntity.ok(comments);
+  }
+
+  @PostMapping()
+  public ResponseEntity<?> postComment(@RequestBody CommentRequest commentRequest) {
+    Long userId = SecurityUtil.getCurrentUserId();
+    CommentDTO newCommentDTO = commentService.createComment(userId, commentRequest);
+    return ResponseEntity.ok(newCommentDTO);
   }
 
 }

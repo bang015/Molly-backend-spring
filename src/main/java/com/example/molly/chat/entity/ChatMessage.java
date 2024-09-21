@@ -5,12 +5,16 @@ import java.util.List;
 import com.example.molly.common.BaseEntity;
 import com.example.molly.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatMessage extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "userId", nullable = false)
@@ -28,5 +32,6 @@ public class ChatMessage extends BaseEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, columnDefinition = "ENUM('USER', 'SYSTEM') DEFAULT 'USER'")
+  @Builder.Default
   private MessageType type = MessageType.USER;
 }

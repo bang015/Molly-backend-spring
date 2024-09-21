@@ -42,9 +42,7 @@ public class FollowService {
       followRepository.delete(followOptional.get());
       return false;
     } else {
-      Follow follow = new Follow();
-      follow.setFollower(follower);
-      follow.setFollowing(following);
+      Follow follow = Follow.builder().follower(follower).following(following).build();
       followRepository.save(follow);
       return true;
     }

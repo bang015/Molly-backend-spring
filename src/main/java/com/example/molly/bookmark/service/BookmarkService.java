@@ -32,9 +32,7 @@ public class BookmarkService {
       bookmarkRepository.deleteByUserIdAndPostId(userId, postId);
       return false;
     } else {
-      Bookmark bookmark = new Bookmark();
-      bookmark.setPost(post);
-      bookmark.setUser(user);
+      Bookmark bookmark = Bookmark.builder().post(post).user(user).build();
       bookmarkRepository.save(bookmark);
       return true;
     }

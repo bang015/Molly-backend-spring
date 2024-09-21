@@ -7,6 +7,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.molly.auth.dto.JwtRequest;
 import com.example.molly.auth.dto.JwtToken;
 import com.example.molly.auth.dto.SendEmailRequest;
 import com.example.molly.auth.dto.SignInRequest;
@@ -16,6 +18,8 @@ import com.example.molly.auth.service.AuthService;
 import com.example.molly.common.service.EmailService;
 import com.example.molly.user.entity.User;
 import com.example.molly.user.service.UserService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -73,6 +77,19 @@ public class AuthController {
           : ResponseEntity.status(204).body("사용가능한 닉네임입니다.");
     }
     return ResponseEntity.ok("이미 사용중인 닉네임입니다.");
+  }
+
+  @PostMapping("/token")
+  public ResponseEntity<?> refreshToken(@RequestBody JwtRequest jwtRequest) {
+    System.out.println(jwtRequest);
+    System.out.println(jwtRequest.getRefreshToken());
+    if (!jwtTokenProvider.validateToken(jwtRequest.getRefreshToken())) {
+      throw new JwtException("잘못된 토큰입니다.");
+    }
+    Claims claims = jwtTokenProvider.getClaims(jwtRequest.getRefreshToken());
+    Long userId = Long.valueOf(claims.getSubject());
+    JwtToken newTokens = jwtTokenProvider.generateToken(userId);
+    return ResponseEntity.ok(newTokens);
   }
 
 }

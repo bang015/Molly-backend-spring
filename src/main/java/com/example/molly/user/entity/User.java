@@ -3,7 +3,6 @@ package com.example.molly.user.entity;
 import java.util.List;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.example.molly.auth.dto.SignUpRequest;
 import com.example.molly.bookmark.entity.Bookmark;
 import com.example.molly.chat.entity.ChatMembers;
 import com.example.molly.comment.entity.Comment;
@@ -13,12 +12,16 @@ import com.example.molly.like.entity.Like;
 import com.example.molly.post.entity.Post;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User extends BaseEntity {
   @Column(nullable = false, unique = true)
   @Email(message = "Invalid email format")
@@ -60,16 +63,6 @@ public class User extends BaseEntity {
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Like> likedPosts;
-
-  protected User() {
-  }
-
-  public User(SignUpRequest signUpRequest) {
-    this.email = signUpRequest.getEmail();
-    this.nickname = signUpRequest.getNickname();
-    this.name = signUpRequest.getName();
-    this.password = signUpRequest.getPassword();
-  }
 
   private static final PasswordEncoder encoder = new BCryptPasswordEncoder();
 

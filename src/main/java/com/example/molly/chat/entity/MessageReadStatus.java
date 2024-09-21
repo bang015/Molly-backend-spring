@@ -3,12 +3,16 @@ package com.example.molly.chat.entity;
 import com.example.molly.common.BaseEntity;
 import com.example.molly.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MessageReadStatus extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "messageId", nullable = false)
@@ -19,5 +23,6 @@ public class MessageReadStatus extends BaseEntity {
   private User user;
 
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+  @Builder.Default
   private boolean isRead = false;
 }

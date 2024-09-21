@@ -7,6 +7,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.example.molly.common.dto.ErrorResponse;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.security.SignatureException;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
@@ -25,5 +29,17 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
     ErrorResponse errorResponse = new ErrorResponse("이메일 또는 비밀번호가 잘못되었습니다.", HttpStatus.FORBIDDEN.value());
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+  }
+
+  @ExceptionHandler(ExpiredJwtException.class)
+  public ResponseEntity<ErrorResponse> handleExpiredJwtException(ExpiredJwtException ex) {
+    ErrorResponse errorResponse = new ErrorResponse("기간이 만료된 토큰입니다.", HttpStatus.UNAUTHORIZED.value());
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+  }
+
+  @ExceptionHandler({ JwtException.class, SignatureException.class })
+  public ResponseEntity<ErrorResponse> handleJwtException(JwtException ex) {
+    ErrorResponse errorResponse = new ErrorResponse("잘못된 토큰입니다.", HttpStatus.UNAUTHORIZED.value());
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
   }
 }
