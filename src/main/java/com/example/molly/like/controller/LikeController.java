@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.molly.common.util.SecurityUtil;
 import com.example.molly.like.service.LikeService;
-import com.example.molly.post.dto.PostRequestDTO;
+import com.example.molly.post.dto.PostIdDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,9 +20,9 @@ public class LikeController {
   private final LikeService likeService;
 
   @PostMapping()
-  public ResponseEntity<?> likePost(@RequestBody PostRequestDTO postRequestDTO) {
+  public ResponseEntity<?> likePost(@RequestBody PostIdDTO postIdDTO) {
     Long userId = SecurityUtil.getCurrentUserId();
-    boolean likePost = likeService.togglePostLike(userId, postRequestDTO.getPostId());
+    boolean likePost = likeService.togglePostLike(userId, postIdDTO.getPostId());
     return ResponseEntity.ok(likePost);
   }
 

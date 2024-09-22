@@ -1,6 +1,7 @@
 package com.example.molly.post.entity;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import com.example.molly.bookmark.entity.Bookmark;
 import com.example.molly.comment.entity.Comment;
@@ -30,8 +31,9 @@ public class Post extends BaseEntity {
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Bookmark> bookmarks;
 
+  @Builder.Default
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<PostMedia> postMedias;
+  private List<PostMedia> postMedias = new ArrayList<>();
 
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Comment> comments;
