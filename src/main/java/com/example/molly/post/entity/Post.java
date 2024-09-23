@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Post extends BaseEntity {
@@ -28,21 +28,27 @@ public class Post extends BaseEntity {
   @Column(columnDefinition = "TEXT", nullable = false)
   private String content;
 
+  @Builder.Default
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Bookmark> bookmarks;
+  private List<Bookmark> bookmarks = new ArrayList<>();
 
   @Builder.Default
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PostMedia> postMedias = new ArrayList<>();
 
+  @Builder.Default
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Comment> comments;
+  private List<Comment> comments = new ArrayList<>();
 
+  @Builder.Default
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Like> likedByUsers;
+  private List<Like> likedByUsers = new ArrayList<>();
 
-  @ManyToMany
-  @JoinTable(name = "PostTag", joinColumns = @JoinColumn(name = "postId"), inverseJoinColumns = @JoinColumn(name = "tagId"))
-  private List<Tag> tags;
+  @Builder.Default
+  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<PostTag> postTags = new ArrayList<>();
 
+  public void updateContent(String content) {
+    this.content = content;
+  }
 }
