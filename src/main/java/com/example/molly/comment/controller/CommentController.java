@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +27,27 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 public class CommentController {
   private final CommentService commentService;
+
+  @PostMapping()
+  public ResponseEntity<?> postComment(@RequestBody CommentRequest commentRequest) {
+    Long userId = SecurityUtil.getCurrentUserId();
+    CommentDTO newCommentDTO = commentService.createComment(userId, commentRequest);
+    return ResponseEntity.ok(newCommentDTO);
+  }
+
+  @PatchMapping("/{id}")
+  public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody CommentRequest commentRequest) {
+    Long userId = SecurityUtil.getCurrentUserId();
+    CommentDTO comment = commentService.updateComment(userId, id, commentRequest.getContent());
+    return ResponseEntity.ok(comment);
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteComment(@PathVariable Long id) {
+    Long userId = SecurityUtil.getCurrentUserId();
+    commentService.deleteComment(userId, id);
+    return ResponseEntity.ok(id);
+  }
 
   @GetMapping("/my")
   public ResponseEntity<?> getMyComment(@RequestParam Long postId) {
@@ -40,11 +63,10 @@ public class CommentController {
     return ResponseEntity.ok(comments);
   }
 
-  @PostMapping()
-  public ResponseEntity<?> postComment(@RequestBody CommentRequest commentRequest) {
-    Long userId = SecurityUtil.getCurrentUserId();
-    CommentDTO newCommentDTO = commentService.createComment(userId, commentRequest);
-    return ResponseEntity.ok(newCommentDTO);
+  @GetMapping("/sub/{id}")
+  public ResponseEntity<?> getSubComment(@PathVariable Long id, @RequestParam int page) {
+    List<CommentDTO> comments = commentService.getSubComment(id, page);
+    return ResponseEntity.ok(comments);
   }
 
 }

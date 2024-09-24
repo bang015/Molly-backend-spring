@@ -2,13 +2,11 @@ package com.example.molly.post.entity;
 
 import java.util.List;
 import java.util.ArrayList;
-
 import com.example.molly.bookmark.entity.Bookmark;
 import com.example.molly.comment.entity.Comment;
 import com.example.molly.common.BaseEntity;
 import com.example.molly.like.entity.Like;
 import com.example.molly.user.entity.User;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.example.molly.post.entity.Post;
-import com.example.molly.user.dto.UserResponseDTO;
+import com.example.molly.user.dto.UserDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
@@ -15,7 +15,7 @@ public class PostDTO {
   private String content;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
-  private UserResponseDTO user;
+  private UserDTO user;
   private List<PostMediaDTO> postMedias;
   @JsonProperty("isLiked")
   private boolean isLiked;
@@ -28,7 +28,7 @@ public class PostDTO {
     this.content = post.getContent();
     this.createdAt = post.getCreatedAt();
     this.updatedAt = post.getUpdatedAt();
-    this.user = post.getUser() != null ? new UserResponseDTO(post.getUser()) : null;
+    this.user = post.getUser() != null ? new UserDTO(post.getUser()) : null;
     this.postMedias = post.getPostMedias().stream().map(PostMediaDTO::new).collect(Collectors.toList());
     this.isLiked = isLiked;
     this.likeCount = likeCount;

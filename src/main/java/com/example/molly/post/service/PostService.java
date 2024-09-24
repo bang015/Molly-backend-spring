@@ -111,18 +111,33 @@ public class PostService {
     List<Long> followedUserIds = followRepository.findFollowerUserIds(userId);
     followedUserIds.add(userId);
     Pageable pageable = PageRequest.of(page - 1, limit);
-    Page<Post> posts = postRepository.findPostsByUserIds(followedUserIds, pageable);
-    List<PostDTO> postList = getPostDTOList(posts, userId);
-    return new PostListResponse(postList, posts.getTotalPages());
+    Page<Post> postPage = postRepository.findPostsByUserIds(followedUserIds, pageable);
+    List<PostDTO> postList = getPostDTOList(postPage, userId);
+    return new PostListResponse(postList, postPage.getTotalPages());
   }
 
   public PostListResponse getExplorePost(Long userId, int page, int limit) {
     List<Long> followedUserIds = followRepository.findFollowerUserIds(userId);
     followedUserIds.add(userId);
     Pageable pageable = PageRequest.of(page - 1, limit);
-    Page<Post> posts = postRepository.findPostsByUserIdsNotIn(followedUserIds, pageable);
-    List<PostDTO> postList = getPostDTOList(posts, userId);
-    return new PostListResponse(postList, posts.getTotalPages());
+    Page<Post> postPage = postRepository.findPostsByUserIdsNotIn(followedUserIds, pageable);
+    List<PostDTO> postList = getPostDTOList(postPage, userId);
+    return new PostListResponse(postList, postPage.getTotalPages());
+  }
+
+  public PostListResponse getUserPost(Long userId, int page, int limit) {
+    Pageable pageable = PageRequest.of(page - 1, limit);
+    Page<Post> postPage = postRepository.findPostsByUserId(userId, pageable);
+    List<PostDTO> postList = getPostDTOList(postPage, userId);
+    return new PostListResponse(postList, postPage.getTotalPages());
+  }
+
+  public PostListResponse getBookmarkPost(Long userId, int page, int limit) {
+    Pageable pageable = PageRequest.of(page - 1, limit);
+    Page<Post> postPage = bookmarkRepository.findBookmarkedPostsByUserId(userId, pageable);
+    System.out.println(postPage);
+    List<PostDTO> postList = getPostDTOList(postPage, userId);
+    return new PostListResponse(postList, postPage.getTotalPages());
   }
 
   List<PostDTO> getPostDTOList(Page<Post> posts, Long userId) {

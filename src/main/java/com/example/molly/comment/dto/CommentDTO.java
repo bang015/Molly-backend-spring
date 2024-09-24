@@ -4,7 +4,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 import com.example.molly.comment.entity.Comment;
-import com.example.molly.user.dto.UserResponseDTO;
+import com.example.molly.user.dto.UserDTO;
 
 @Data
 public class CommentDTO {
@@ -15,7 +15,7 @@ public class CommentDTO {
   private LocalDateTime updatedAt;
   private int subCommentsCount;
   private Long postId;
-  private UserResponseDTO user;
+  private UserDTO user;
 
   public CommentDTO(Comment comment, int count) {
     this.id = comment.getId();
@@ -25,6 +25,6 @@ public class CommentDTO {
     this.updatedAt = comment.getUpdatedAt();
     this.subCommentsCount = count;
     this.postId = comment.getPost().getId();
-    this.user = comment.getUser() != null ? new UserResponseDTO(comment.getUser()) : null;
+    this.user = comment.getUser() != null ? new UserDTO(comment.getUser()) : null;
   }
 }

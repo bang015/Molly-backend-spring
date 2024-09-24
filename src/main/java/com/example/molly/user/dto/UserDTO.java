@@ -5,7 +5,7 @@ import com.example.molly.user.entity.User;
 import lombok.Data;
 
 @Data
-public class UserResponseDTO {
+public class UserDTO {
   private long id;
   private String email;
   private String nickname;
@@ -16,7 +16,7 @@ public class UserResponseDTO {
   private long followerCount;
   private long followingCount;
 
-  public UserResponseDTO(User user) {
+  public UserDTO(User user) {
     this.id = user.getId();
     this.email = user.getEmail();
     this.nickname = user.getNickname();

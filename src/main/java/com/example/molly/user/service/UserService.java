@@ -4,11 +4,11 @@ import org.springframework.stereotype.Service;
 
 import com.example.molly.follow.repository.FollowRepository;
 import com.example.molly.post.repository.PostRepository;
-import com.example.molly.user.dto.UserResponseDTO;
+import com.example.molly.user.dto.UserCountsDTO;
+import com.example.molly.user.dto.UserDTO;
 import com.example.molly.user.entity.User;
 import com.example.molly.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -28,17 +28,22 @@ public class UserService {
     User user = userRepository.findByNickname(nickname).orElse(null);
     return user;
   }
-  @Transactional
-  public UserResponseDTO getUser(Long userId) {
+
+  public UserDTO getUser(Long userId) {
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("유저 정보를 찾지 못했습니다."));
-    UserResponseDTO userDto = new UserResponseDTO(user);
-    long postCount = postRepository.countByUser(user);
-    long followerCount = followRepository.countByFollower(user);
-    long followingCount = followRepository.countByFollowing(user);
-    userDto.setPostCount(postCount);
-    userDto.setFollowerCount(followerCount);
-    userDto.setFollowingCount(followingCount);
+    UserDTO userDto = new UserDTO(user);
+    UserCountsDTO counts = calculateUserCounts(user);
+    userDto.setPostCount(counts.getPostCount());
+    userDto.setFollowerCount(counts.getFollowerCount());
+    userDto.setFollowingCount(counts.getFollowingCount());
     return userDto;
+  }
+
+  public UserCountsDTO calculateUserCounts(User user) {
+    Long postCount = postRepository.countByUser(user);
+    Long followingCount = followRepository.countByFollower(user);
+    Long followerCount = followRepository.countByFollowing(user);
+    return new UserCountsDTO(postCount, followerCount, followingCount);
   }
 
 }

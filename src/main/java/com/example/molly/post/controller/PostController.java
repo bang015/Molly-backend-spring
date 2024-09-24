@@ -62,15 +62,29 @@ public class PostController {
   @GetMapping("/main")
   public ResponseEntity<?> getMainPosts(@RequestParam int page, @RequestParam(defaultValue = "5") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
-    PostListResponse result = postService.getMainPost(userId, page, limit);
-    return ResponseEntity.ok(result);
+    PostListResponse postListResponse = postService.getMainPost(userId, page, limit);
+    return ResponseEntity.ok(postListResponse);
   }
 
   @GetMapping
   public ResponseEntity<?> getExplorePosts(@RequestParam int page, @RequestParam(defaultValue = "5") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
-    PostListResponse result = postService.getExplorePost(userId, page, limit);
-    return ResponseEntity.ok(result);
+    PostListResponse postListResponse = postService.getExplorePost(userId, page, limit);
+    return ResponseEntity.ok(postListResponse);
+  }
+
+  @GetMapping("/my/{userId}")
+  public ResponseEntity<?> getUserPosts(@PathVariable Long userId, @RequestParam int page,
+      @RequestParam(defaultValue = "12") int limit) {
+    PostListResponse postListResponse = postService.getUserPost(userId, page, limit);
+    return ResponseEntity.ok(postListResponse);
+  }
+
+  @GetMapping("/bookmark/{userId}")
+  public ResponseEntity<?> getBookmarkPosts(@PathVariable Long userId, @RequestParam int page,
+      @RequestParam(defaultValue = "12") int limit) {
+    PostListResponse postListResponse = postService.getBookmarkPost(userId, page, limit);
+    return ResponseEntity.ok(postListResponse);
   }
 
 }

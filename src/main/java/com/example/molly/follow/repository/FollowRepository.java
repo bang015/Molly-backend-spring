@@ -38,4 +38,11 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
                         "AND (u.name LIKE %:query% OR u.nickname LIKE %:query%)")
         Page<Follow> findFollowingsByUserIdAndQuery(@Param("userId") Long userId, @Param("query") String query,
                         Pageable pageable);
+
+        @Query("SELECT f FROM Follow f " +
+                        "JOIN f.follower u " +
+                        "WHERE f.following.id = :userId " +
+                        "AND (u.name LIKE %:query% OR u.nickname LIKE %:query%)")
+        Page<Follow> findFollowersByUserIdAndQuery(@Param("userId") Long userId, @Param("query") String query,
+                        Pageable pageable);
 }

@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.molly.comment.dto.CommentDTO;
 import com.example.molly.comment.dto.CommentRequest;
@@ -26,6 +27,50 @@ public class CommentService {
   private final PostRepository postRepository;
   private final CommentRepository commentRepository;
 
+  @Transactional
+  public CommentDTO createComment(Long userId, CommentRequest comment) {
+    try {
+      User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
+      Post post = postRepository.findById(comment.getPostId())
+          .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물입니다."));
+      Comment parentComment = null;
+      if (comment.getCommentId() != null) {
+        parentComment = commentRepository.findById(comment.getCommentId())
+            .orElseThrow(() -> new RuntimeException("존재하지 않는 댓글입니다."));
+      }
+      Comment newComment = Comment.builder().post(post).user(user).parentComment(parentComment)
+          .content(comment.getContent()).build();
+      commentRepository.save(newComment);
+      return new CommentDTO(newComment, 0);
+    } catch (Exception e) {
+      throw new RuntimeException("댓글 생성 중 오류가 발생했습니다.", e);
+    }
+
+  }
+
+  @Transactional
+  public CommentDTO updateComment(Long userId, Long commentId, String content) {
+    try {
+      Comment comment = verifyCommentUser(commentId, userId);
+      comment.updateContent(content);
+      return new CommentDTO(comment, getSubCommentCount(commentId));
+    } catch (Exception e) {
+      throw new RuntimeException("댓글 수정 중 오류가 발생했습니다.", e);
+    }
+
+  }
+
+  @Transactional
+  public void deleteComment(Long userId, Long commentId) {
+    try {
+      Comment comment = verifyCommentUser(commentId, userId);
+      commentRepository.delete(comment);
+    } catch (Exception e) {
+      throw new RuntimeException("댓글 삭제 중 오류가 발생했습니다.", e);
+    }
+
+  }
+
   public int getSubCommentCount(Long commentId) {
     return commentRepository.countByParentCommentId(commentId);
   }
@@ -38,6 +83,15 @@ public class CommentService {
     return new CommentResponse(commentList, commentPage.getTotalPages());
   }
 
+  public List<CommentDTO> getSubComment(Long commentId, int page) {
+    int limit = 3;
+    Pageable pageable = PageRequest.of(page - 1, limit);
+    Comment parentComment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new RuntimeException("존재하지 않는 댓글입니다."));
+    Page<Comment> subCommentsPage = commentRepository.findByParentComment(parentComment, pageable);
+    return getCommentDTOList(subCommentsPage);
+  }
+
   public List<CommentDTO> getMyComment(Long userId, Long postId) {
     List<Comment> comments = commentRepository.findByPostIdAndUserIdAndParentCommentIsNull(postId, userId);
     return comments.stream().map(comment -> {
@@ -46,24 +100,18 @@ public class CommentService {
     }).collect(Collectors.toList());
   }
 
-  public CommentDTO createComment(Long userId, CommentRequest comment) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
-    Post post = postRepository.findById(comment.getPostId()).orElseThrow(() -> new RuntimeException("존재하지 않는 게시물입니다."));
-    Comment parentComment = null;
-    if (comment.getCommentId() != null) {
-      parentComment = commentRepository.findById(comment.getCommentId())
-          .orElseThrow(() -> new RuntimeException("존재하지 않는 댓글입니다."));
-    }
-    Comment newComment = Comment.builder().post(post).user(user).parentComment(parentComment)
-        .content(comment.getContent()).build();
-    commentRepository.save(newComment);
-    return new CommentDTO(newComment, 0);
-  }
-
   List<CommentDTO> getCommentDTOList(Page<Comment> commentPage) {
     return commentPage.stream().map(comment -> {
       int count = getSubCommentCount(comment.getId());
       return new CommentDTO(comment, count);
     }).collect(Collectors.toList());
+  }
+
+  Comment verifyCommentUser(Long commentId, Long userId) {
+    Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("존재하지 않는 댓글입니다."));
+    if (!comment.getUser().getId().equals(userId)) {
+      new RuntimeException("권한이 없습니다.");
+    }
+    return comment;
   }
 }

@@ -7,19 +7,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import com.example.molly.common.util.SecurityUtil;
 import com.example.molly.follow.dto.FollowResponseDTO;
 import com.example.molly.follow.entity.Follow;
 import com.example.molly.follow.repository.FollowRepository;
 import com.example.molly.user.entity.User;
 import com.example.molly.user.repository.UserRepository;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -75,23 +71,42 @@ public class FollowService {
   }
 
   // 팔로윙 리스트
-  public Map<String, Object> getFollowings(Long userId, String query, int page) {
+  public Map<String, Object> getFollowings(Long userId, Long targetUserId, String query, int page) {
     Pageable pageable = PageRequest.of(page - 1, 12);
-    Page<Follow> followPage = followRepository.findFollowingsByUserIdAndQuery(userId, query, pageable);
+    Page<Follow> followPage = followRepository.findFollowingsByUserIdAndQuery(targetUserId, query, pageable);
     List<Long> followingUserIds = followPage.stream()
         .map(follow -> follow.getFollowing().getId())
         .collect(Collectors.toList());
-    Long currentUserId = SecurityUtil.getCurrentUserId();
-    List<Follow> followedUsers = followRepository.findFollowedUsers(currentUserId, followingUserIds);
-    Set<Long> followedUserIds = followedUsers.stream()
-        .map(follow -> follow.getFollowing().getId())
-        .collect(Collectors.toSet());
-    List<FollowResponseDTO> followings = followPage.stream().map(follow -> {
-      return new FollowResponseDTO(follow.getFollowing(), "", followedUserIds.contains(follow.getFollowing().getId()));
-    }).collect(Collectors.toList());
+    List<FollowResponseDTO> followings = getFollowResponseDTOList(userId, followingUserIds, true, followPage);
     HashMap<String, Object> result = new HashMap<>();
     result.put("followings", followings);
     result.put("totalPages", followPage.getTotalPages());
     return result;
+  }
+
+  public Map<String, Object> getFollowers(Long userId, Long targetUserId, String query, int page) {
+    Pageable pageable = PageRequest.of(page - 1, 12);
+    Page<Follow> followPage = followRepository.findFollowersByUserIdAndQuery(targetUserId, query, pageable);
+    List<Long> followerUserIds = followPage.stream()
+        .map(follow -> follow.getFollower().getId())
+        .collect(Collectors.toList());
+    List<FollowResponseDTO> followings = getFollowResponseDTOList(userId, followerUserIds, false, followPage);
+    HashMap<String, Object> result = new HashMap<>();
+    result.put("followers", followings);
+    result.put("totalPages", followPage.getTotalPages());
+    return result;
+  }
+
+  List<FollowResponseDTO> getFollowResponseDTOList(Long userId, List<Long> followUserIds, boolean isFollowing,
+      Page<Follow> followPage) {
+    List<Follow> followedUsers = followRepository.findFollowedUsers(userId, followUserIds);
+    Set<Long> followedUserIds = followedUsers.stream()
+        .map(follow -> follow.getFollowing().getId())
+        .collect(Collectors.toSet());
+    return followPage.stream().map(follow -> {
+      User followUser = isFollowing ? follow.getFollowing() : follow.getFollower();
+      Long followUserId = isFollowing ? follow.getFollowing().getId() : follow.getFollower().getId();
+      return new FollowResponseDTO(followUser, "", followedUserIds.contains(followUserId));
+    }).collect(Collectors.toList());
   }
 }

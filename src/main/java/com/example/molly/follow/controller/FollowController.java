@@ -48,12 +48,21 @@ public class FollowController {
     return ResponseEntity.ok(isFollowed);
   }
 
-  @GetMapping("/following")
-  public ResponseEntity<?> selectFollowing(@RequestParam("userId") Long targetUserId,
+  @GetMapping("/following/{targetUserId}/")
+  public ResponseEntity<?> selectFollowing(@PathVariable Long targetUserId,
       @RequestParam int page,
       @RequestParam("query") String keyword) {
-    Map<String, Object> result = followService.getFollowings(targetUserId, keyword, page);
+    Long userId = SecurityUtil.getCurrentUserId();
+    Map<String, Object> result = followService.getFollowings(userId, targetUserId, keyword, page);
     return ResponseEntity.ok(result);
   }
 
+  @GetMapping("/follower/{targetUserId}/")
+  public ResponseEntity<?> selectFollower(@PathVariable Long targetUserId,
+      @RequestParam int page,
+      @RequestParam("query") String keyword) {
+    Long userId = SecurityUtil.getCurrentUserId();
+    Map<String, Object> result = followService.getFollowers(userId, targetUserId, keyword, page);
+    return ResponseEntity.ok(result);
+  }
 }
