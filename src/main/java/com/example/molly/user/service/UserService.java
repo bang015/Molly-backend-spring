@@ -1,6 +1,8 @@
 package com.example.molly.user.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.molly.follow.repository.FollowRepository;
 import com.example.molly.post.repository.PostRepository;
@@ -18,17 +20,21 @@ public class UserService {
   private final UserRepository userRepository;
   private final PostRepository postRepository;
   private final FollowRepository followRepository;
+  private final PasswordEncoder passwordEncoder;
 
+  // 이메일로 유저 찾기
   public User findUserByEmail(String email) {
     User user = userRepository.findByEmail(email).orElse(null);
     return user;
   }
 
+  // 닉네임으로 유저 찾기
   public User findUserByNickname(String nickname) {
     User user = userRepository.findByNickname(nickname).orElse(null);
     return user;
   }
 
+  // 유저 정보
   public UserDTO getUser(Long userId) {
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("유저 정보를 찾지 못했습니다."));
     UserDTO userDto = new UserDTO(user);
@@ -39,6 +45,7 @@ public class UserService {
     return userDto;
   }
 
+  // 유저 게시물,팔로워,팔로윙 카운트
   public UserCountsDTO calculateUserCounts(User user) {
     Long postCount = postRepository.countByUser(user);
     Long followingCount = followRepository.countByFollower(user);
@@ -46,4 +53,19 @@ public class UserService {
     return new UserCountsDTO(postCount, followerCount, followingCount);
   }
 
+  // 유저 정보 수정
+  @Transactional
+  public UserDTO updateUserProfile(Long userId, String name, String nickname, String introduce, String newPassword,
+      String currentPassword) {
+    try {
+      User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("유저 정보를 찾지 못했습니다."));
+      user.updateProfile(name, nickname, introduce);
+      if (newPassword != null && passwordEncoder.matches(currentPassword, user.getPassword())) {
+        user.updatePassword(passwordEncoder.encode(newPassword));
+      }
+      return new UserDTO(user);
+    } catch (Exception e) {
+      throw new RuntimeException("프로필 수정 중 오류가 발생했습니다.");
+    }
+  }
 }

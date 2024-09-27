@@ -20,6 +20,7 @@ public class PostMediaService {
   private final CloudinaryService cloudinaryService;
   private final PostMediaRepository postMediaRepository;
 
+  // 게시물 미디어 업로드
   public List<PostMedia> createPostMedia(MultipartFile[] files, Post post) throws IOException {
     List<PostMedia> postMedias = new ArrayList<>();
     for (MultipartFile file : files) {
@@ -27,7 +28,6 @@ public class PostMediaService {
       String fileName = (String) uploadResult.get("public_id");
       String filePath = (String) uploadResult.get("url");
       String fileType = (String) uploadResult.get("resource_type");
-
       PostMedia postMedia = new PostMedia(post, fileName, fileType, filePath);
       postMedias.add(postMedia);
       postMediaRepository.save(postMedia);
@@ -36,6 +36,7 @@ public class PostMediaService {
     return postMedias;
   }
 
+  // 게시물 미디어 삭제
   public void deletePostMedia(String publicId) {
     try {
       cloudinaryService.delete(publicId);

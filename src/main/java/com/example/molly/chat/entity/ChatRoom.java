@@ -18,6 +18,9 @@ public class ChatRoom extends BaseEntity {
   @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ChatMembers> users;
 
+  @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ChatMessage> messages;
+
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
   @Builder.Default
   private boolean isGroupChat = false;

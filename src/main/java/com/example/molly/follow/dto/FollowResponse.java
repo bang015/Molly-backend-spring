@@ -9,12 +9,12 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class FollowResponseDTO extends UserDTO {
+public class FollowResponse extends UserDTO {
   private String message;
   @JsonProperty("isFollowed")
   private boolean isFollowed = false;
 
-  public FollowResponseDTO(User user, String message, boolean isFollowed) {
+  public FollowResponse(User user, String message, boolean isFollowed) {
     super(user);
     this.message = message;
     this.isFollowed = isFollowed;

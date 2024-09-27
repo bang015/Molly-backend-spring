@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.molly.bookmark.entity.Bookmark;
 import com.example.molly.bookmark.repository.BookmarkRepository;
 import com.example.molly.follow.repository.FollowRepository;
+import com.example.molly.like.entity.Like;
 import com.example.molly.like.repository.LikeRepository;
 import com.example.molly.post.dto.PostDTO;
 import com.example.molly.post.dto.PostListResponse;
@@ -23,9 +25,10 @@ import com.example.molly.post.entity.PostTag;
 import com.example.molly.post.entity.Tag;
 import com.example.molly.post.repository.PostRepository;
 import com.example.molly.post.repository.PostTagRepository;
+import com.example.molly.post.repository.TagRepository;
 import com.example.molly.user.entity.User;
 import com.example.molly.user.repository.UserRepository;
-
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -39,7 +42,9 @@ public class PostService {
   private final PostTagRepository postTagRepository;
   private final PostMediaService postMediaService;
   private final TagService tagService;
+  private final TagRepository tagRepository;
 
+  // 게시물 생성
   @Transactional
   public PostResponse post(MultipartFile[] files, String content, List<String> hashTags, Long userId) {
     List<PostMedia> postMedias = new ArrayList<>();
@@ -56,7 +61,6 @@ public class PostService {
       Post post = postRepository.findById(newPost.getId()).get();
       PostDTO postDTO = getPostDTO(post, userId);
       return new PostResponse(postDTO, "게시물이 공유 되었습니다");
-
     } catch (Exception e) {
       System.out.println(e);
       for (PostMedia media : postMedias) {
@@ -66,6 +70,7 @@ public class PostService {
     }
   }
 
+  // 게시물 삭제
   @Transactional
   public void deletePost(Long postId, Long userId) {
     try {
@@ -84,6 +89,7 @@ public class PostService {
     }
   }
 
+  // 게시물 수정
   @Transactional
   public PostResponse updatePost(UpdatePostRequest request, Long userId) {
     try {
@@ -107,6 +113,7 @@ public class PostService {
     }
   }
 
+  // 메인 게시물 리스트
   public PostListResponse getMainPost(Long userId, int page, int limit) {
     List<Long> followedUserIds = followRepository.findFollowerUserIds(userId);
     followedUserIds.add(userId);
@@ -116,6 +123,7 @@ public class PostService {
     return new PostListResponse(postList, postPage.getTotalPages());
   }
 
+  // 추천 게시물 리스트
   public PostListResponse getExplorePost(Long userId, int page, int limit) {
     List<Long> followedUserIds = followRepository.findFollowerUserIds(userId);
     followedUserIds.add(userId);
@@ -125,30 +133,52 @@ public class PostService {
     return new PostListResponse(postList, postPage.getTotalPages());
   }
 
-  public PostListResponse getUserPost(Long userId, int page, int limit) {
+  // 유저 게시물 리스트
+  public PostListResponse getUserPost(Long userId, Long targetUserId, int page, int limit) {
     Pageable pageable = PageRequest.of(page - 1, limit);
-    Page<Post> postPage = postRepository.findPostsByUserId(userId, pageable);
+    Page<Post> postPage = postRepository.findPostsByUserId(targetUserId, pageable);
     List<PostDTO> postList = getPostDTOList(postPage, userId);
     return new PostListResponse(postList, postPage.getTotalPages());
   }
 
-  public PostListResponse getBookmarkPost(Long userId, int page, int limit) {
+  // 북마크 게시물 리스트
+  public PostListResponse getBookmarkPost(Long userId, Long targetUserId, int page, int limit) {
     Pageable pageable = PageRequest.of(page - 1, limit);
-    Page<Post> postPage = bookmarkRepository.findBookmarkedPostsByUserId(userId, pageable);
-    System.out.println(postPage);
+    Page<Post> postPage = bookmarkRepository.findBookmarkedPostsByUserId(targetUserId, pageable);
     List<PostDTO> postList = getPostDTOList(postPage, userId);
     return new PostListResponse(postList, postPage.getTotalPages());
   }
 
+  public PostListResponse getTagPost(Long userId, String tagName, int page, int limit) {
+    Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다."));
+    Pageable pageable = PageRequest.of(page - 1, limit);
+    Page<Post> postPage = postRepository.findPostsByTagName(tag.getName(), pageable);
+    List<PostDTO> postList = getPostDTOList(postPage, userId);
+    return new PostListResponse(postList, postPage.getTotalPages(), postTagRepository.countByTag(tag));
+  }
+
+  // PostDTO 포맷
   List<PostDTO> getPostDTOList(Page<Post> posts, Long userId) {
+    List<Long> postIds = posts.stream()
+        .map(Post::getId)
+        .collect(Collectors.toList());
+    List<Like> likes = likeRepository.findByUserIdAndPostIdIn(userId, postIds);
+    List<Bookmark> bookmarks = bookmarkRepository.findByUserIdAndPostIdIn(userId, postIds);
+    Set<Long> likedPostIds = likes.stream()
+        .map(like -> like.getPost().getId())
+        .collect(Collectors.toSet());
+    Set<Long> bookmarkedPostIds = bookmarks.stream()
+        .map(bookmark -> bookmark.getPost().getId())
+        .collect(Collectors.toSet());
     return posts.stream().map(post -> {
-      boolean isLiked = likeRepository.existsByUserIdAndPostId(userId, post.getId());
+      boolean isLiked = likedPostIds.contains(post.getId());
       long likeCount = likeRepository.countByPostId(post.getId());
-      boolean isBookmarked = bookmarkRepository.existsByUserIdAndPostId(userId, post.getId());
+      boolean isBookmarked = bookmarkedPostIds.contains(post.getId());
       return new PostDTO(post, isLiked, likeCount, isBookmarked);
     }).collect(Collectors.toList());
   }
 
+  // PostDTO 포맷
   PostDTO getPostDTO(Post post, Long userId) {
     boolean isLiked = likeRepository.existsByUserIdAndPostId(userId, post.getId());
     long likeCount = likeRepository.countByPostId(post.getId());
@@ -156,6 +186,7 @@ public class PostService {
     return new PostDTO(post, isLiked, likeCount, isBookmarked);
   }
 
+  // 게시물 존재 여부, 권한 확인
   Post verifyPostUser(Long postId, Long userId) {
     Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
     if (!post.getUser().getId().equals(userId)) {

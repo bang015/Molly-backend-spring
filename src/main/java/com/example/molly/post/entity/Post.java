@@ -1,12 +1,17 @@
 package com.example.molly.post.entity;
 
 import java.util.List;
+
+import org.hibernate.annotations.BatchSize;
+
 import java.util.ArrayList;
+
 import com.example.molly.bookmark.entity.Bookmark;
 import com.example.molly.comment.entity.Comment;
 import com.example.molly.common.BaseEntity;
 import com.example.molly.like.entity.Like;
 import com.example.molly.user.entity.User;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +20,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder(toBuilder = true)
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Post extends BaseEntity {
@@ -31,6 +36,7 @@ public class Post extends BaseEntity {
   private List<Bookmark> bookmarks = new ArrayList<>();
 
   @Builder.Default
+  @BatchSize(size = 12)
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PostMedia> postMedias = new ArrayList<>();
 

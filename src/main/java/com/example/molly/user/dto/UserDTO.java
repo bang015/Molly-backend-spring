@@ -22,6 +22,6 @@ public class UserDTO {
     this.nickname = user.getNickname();
     this.name = user.getName();
     this.introduce = user.getIntroduce();
-    this.profileImage = user.getProfileImage() != null ? new ProfileImageDTO(user.getProfileImage()) : null;
+    this.profileImage = user.getProfileImage() != null ? new ProfileImageDTO(user.getProfileImage().getPath()) : null;
   }
 }

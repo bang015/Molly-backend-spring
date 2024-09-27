@@ -67,10 +67,31 @@ public class User extends BaseEntity {
   private static final PasswordEncoder encoder = new BCryptPasswordEncoder();
 
   @PrePersist
-  @PreUpdate
   private void encryptPassword() {
     if (this.password != null && !this.password.isEmpty()) {
       this.password = encoder.encode(this.password);
     }
+  }
+
+  public void updateProfile(String name, String nickname, String introduce) {
+    if (name != null) {
+      this.name = name;
+    }
+    if (nickname != null) {
+      this.nickname = nickname;
+    }
+    if (introduce != null) {
+      this.introduce = introduce;
+    }
+  }
+
+  public void updatePassword(String newPassword) {
+    if (newPassword != null && !newPassword.isEmpty()) {
+      this.password = newPassword;
+    }
+  }
+
+  public void updateProfileImage(ProfileImage profileImage) {
+    this.profileImage = profileImage;
   }
 }

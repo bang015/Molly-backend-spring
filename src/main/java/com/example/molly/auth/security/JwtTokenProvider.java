@@ -50,6 +50,11 @@ public class JwtTokenProvider {
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
   }
 
+  public Long getUserIdFromToken(String accessToken) {
+    Claims claims = getClaims(accessToken);
+    return Long.valueOf(claims.getSubject());
+  }
+
   public Claims getClaims(String token) {
     return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
   }

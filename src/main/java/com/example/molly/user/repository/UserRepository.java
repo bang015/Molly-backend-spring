@@ -17,4 +17,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   @Query("SELECT u FROM User u LEFT JOIN FETCH u.profileImage WHERE u.id NOT IN (SELECT f.following.id FROM Follow f WHERE f.follower.id = :userId) AND u.id <> :userId")
   List<User> findUserNotFollwedByUser(@Param("userId") Long userId, Pageable pageable);
+
+  @Query("SELECT u FROM User u WHERE u.nickname LIKE %:keyword% OR u.name LIKE %:keyword%")
+  List<User> searchUsersByKeyword(String keyword);
 }

@@ -32,6 +32,7 @@ import java.util.HashMap;
 public class PostController {
   private final PostService postService;
 
+  // 게시물 생성
   @PostMapping()
   public ResponseEntity<?> post(@RequestParam String content,
       @RequestParam MultipartFile[] postMedias,
@@ -42,6 +43,7 @@ public class PostController {
     return ResponseEntity.ok(postResponse);
   }
 
+  // 게시물 수정
   @PatchMapping()
   public ResponseEntity<?> updatePost(@RequestBody UpdatePostRequest request) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -49,6 +51,7 @@ public class PostController {
     return ResponseEntity.ok(postResponse);
   }
 
+  // 게시물 삭제
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deletePost(@PathVariable Long id) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -59,6 +62,7 @@ public class PostController {
     return ResponseEntity.ok(response);
   }
 
+  // 메인 게시물 리스트
   @GetMapping("/main")
   public ResponseEntity<?> getMainPosts(@RequestParam int page, @RequestParam(defaultValue = "5") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -66,6 +70,7 @@ public class PostController {
     return ResponseEntity.ok(postListResponse);
   }
 
+  // 추천 게시물 리스트
   @GetMapping
   public ResponseEntity<?> getExplorePosts(@RequestParam int page, @RequestParam(defaultValue = "5") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -73,17 +78,30 @@ public class PostController {
     return ResponseEntity.ok(postListResponse);
   }
 
+  // 유저 게시물 리스트
   @GetMapping("/my/{userId}")
-  public ResponseEntity<?> getUserPosts(@PathVariable Long userId, @RequestParam int page,
+  public ResponseEntity<?> getUserPosts(@PathVariable Long targetUserId, @RequestParam int page,
       @RequestParam(defaultValue = "12") int limit) {
-    PostListResponse postListResponse = postService.getUserPost(userId, page, limit);
+    Long userId = SecurityUtil.getCurrentUserId();
+    PostListResponse postListResponse = postService.getUserPost(userId, targetUserId, page, limit);
     return ResponseEntity.ok(postListResponse);
   }
 
+  // 북마크 게시물 리스트
   @GetMapping("/bookmark/{userId}")
-  public ResponseEntity<?> getBookmarkPosts(@PathVariable Long userId, @RequestParam int page,
+  public ResponseEntity<?> getBookmarkPosts(@PathVariable Long targetUserId, @RequestParam int page,
       @RequestParam(defaultValue = "12") int limit) {
-    PostListResponse postListResponse = postService.getBookmarkPost(userId, page, limit);
+    Long userId = SecurityUtil.getCurrentUserId();
+    PostListResponse postListResponse = postService.getBookmarkPost(userId, targetUserId, page, limit);
+    return ResponseEntity.ok(postListResponse);
+  }
+
+  // 태그 게시물 리스트
+  @GetMapping("/tags/{tagName}")
+  public ResponseEntity<?> getTagPosts(@PathVariable String tagName, @RequestParam int page,
+      @RequestParam(defaultValue = "20") int limit) {
+    Long userId = SecurityUtil.getCurrentUserId();
+    PostListResponse postListResponse = postService.getTagPost(userId, tagName, page, limit);
     return ResponseEntity.ok(postListResponse);
   }
 

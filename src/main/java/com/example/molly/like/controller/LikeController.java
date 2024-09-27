@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class LikeController {
   private final LikeService likeService;
 
+  // 좋아요 추가/해제
   @PostMapping()
   public ResponseEntity<?> likePost(@RequestBody PostIdDTO postIdDTO) {
     Long userId = SecurityUtil.getCurrentUserId();

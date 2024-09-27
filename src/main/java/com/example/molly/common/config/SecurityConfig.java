@@ -33,7 +33,8 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http.cors(cors -> cors.configurationSource(corsConfigurationSource())).csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(
-            authorize -> authorize.requestMatchers("/api/auth/**").permitAll().anyRequest().authenticated())
+            authorize -> authorize.requestMatchers("/api/auth/**", "/ws/**").permitAll()
+                .anyRequest().authenticated())
         .addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class).build();
   }
 
@@ -53,7 +54,7 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost"));
+    configuration.setAllowedOrigins(List.of("http://localhost", "http://localhost:80"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);

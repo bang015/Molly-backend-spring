@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class CommentController {
   private final CommentService commentService;
 
+  // 댓글 생성
   @PostMapping()
   public ResponseEntity<?> postComment(@RequestBody CommentRequest commentRequest) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -35,6 +36,7 @@ public class CommentController {
     return ResponseEntity.ok(newCommentDTO);
   }
 
+  // 댓글 수정
   @PatchMapping("/{id}")
   public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody CommentRequest commentRequest) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -42,6 +44,7 @@ public class CommentController {
     return ResponseEntity.ok(comment);
   }
 
+  // 댓글 삭제
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteComment(@PathVariable Long id) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -49,6 +52,7 @@ public class CommentController {
     return ResponseEntity.ok(id);
   }
 
+  // 내가 작성한 댓글 리스트
   @GetMapping("/my")
   public ResponseEntity<?> getMyComment(@RequestParam Long postId) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -56,6 +60,7 @@ public class CommentController {
     return ResponseEntity.ok(comments);
   }
 
+  // 댓글 리스트
   @GetMapping("/{postId}")
   public ResponseEntity<?> getComment(@PathVariable Long postId, @RequestParam int page) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -63,6 +68,7 @@ public class CommentController {
     return ResponseEntity.ok(comments);
   }
 
+  // 대댓글 리스트
   @GetMapping("/sub/{id}")
   public ResponseEntity<?> getSubComment(@PathVariable Long id, @RequestParam int page) {
     List<CommentDTO> comments = commentService.getSubComment(id, page);

@@ -19,15 +19,14 @@ public class BookmarkService {
   private final PostRepository postRepository;
   private final UserRepository userRepository;
 
+  // 북마크 추가/해제
   @Transactional
   public boolean togglePostBookmark(Long userId, Long postId) {
     Post post = postRepository.findById(postId)
         .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물입니다."));
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
-
     boolean isBookmarked = bookmarkRepository.existsByUserIdAndPostId(userId, postId);
-
     if (isBookmarked) {
       bookmarkRepository.deleteByUserIdAndPostId(userId, postId);
       return false;

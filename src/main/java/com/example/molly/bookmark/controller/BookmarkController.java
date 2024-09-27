@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class BookmarkController {
   private final BookmarkService bookmarkService;
 
+  // 북마크 추가/해제
   @PostMapping()
   public ResponseEntity<?> postBookmark(@RequestBody PostIdDTO postIdDTO) {
     Long userId = SecurityUtil.getCurrentUserId();

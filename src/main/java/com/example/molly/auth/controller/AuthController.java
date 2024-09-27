@@ -7,7 +7,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.example.molly.auth.dto.JwtRequest;
 import com.example.molly.auth.dto.JwtToken;
 import com.example.molly.auth.dto.SendEmailRequest;
@@ -64,8 +63,8 @@ public class AuthController {
   // 이메일/닉네임 중복 체크
   @GetMapping("/validateUnique")
   public ResponseEntity<?> validateUniqueEmailAndNickname(
-      @RequestParam(value = "email", required = false) String email,
-      @RequestParam(value = "nickname", required = false) String nickname) {
+      @RequestParam(required = false) String email,
+      @RequestParam(required = false) String nickname) {
     if (email != null && !email.isEmpty()) {
       User emailExists = userService.findUserByEmail(email);
       return emailExists != null ? ResponseEntity.ok("이미 사용중인 이메일입니다.")
@@ -79,10 +78,9 @@ public class AuthController {
     return ResponseEntity.ok("이미 사용중인 닉네임입니다.");
   }
 
+  // 리프레쉬 토큰
   @PostMapping("/token")
   public ResponseEntity<?> refreshToken(@RequestBody JwtRequest jwtRequest) {
-    System.out.println(jwtRequest);
-    System.out.println(jwtRequest.getRefreshToken());
     if (!jwtTokenProvider.validateToken(jwtRequest.getRefreshToken())) {
       throw new JwtException("잘못된 토큰입니다.");
     }

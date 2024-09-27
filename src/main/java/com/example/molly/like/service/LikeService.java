@@ -25,9 +25,7 @@ public class LikeService {
         .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물입니다."));
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
-
     boolean isLiked = likeRepository.existsByUserIdAndPostId(userId, postId);
-
     if (isLiked) {
       likeRepository.deleteByUserIdAndPostId(userId, postId);
       return false;

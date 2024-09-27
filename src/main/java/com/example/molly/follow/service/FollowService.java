@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import com.example.molly.follow.dto.FollowResponseDTO;
+import com.example.molly.follow.dto.FollowResponse;
 import com.example.molly.follow.entity.Follow;
 import com.example.molly.follow.repository.FollowRepository;
 import com.example.molly.user.entity.User;
@@ -26,7 +26,7 @@ public class FollowService {
   private final UserRepository userRepository;
   private final FollowRepository followRepository;
 
-  // 팔로우/ 언팔로우
+  // 팔로우 / 언팔로우
   @Transactional
   public boolean follow(Long userId, Long targetUserId) {
     User follower = userRepository.findById(userId)
@@ -44,6 +44,7 @@ public class FollowService {
     }
   }
 
+  // 팔로우 상태 확인
   public boolean isFollowed(Long userId, Long targetUserId) {
     User follower = userRepository.findById(userId)
         .orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
@@ -51,21 +52,21 @@ public class FollowService {
         .orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
     Optional<Follow> followOptional = followRepository.findByFollowerAndFollowing(follower, following);
     if (followOptional.isPresent()) {
-      return false;
-    } else {
       return true;
+    } else {
+      return false;
     }
   }
 
   // 추천 팔로우 리스트
-  public List<FollowResponseDTO> getSuggestFollowers(Long userId, int limit) {
+  public List<FollowResponse> getSuggestFollowers(Long userId, int limit) {
     Pageable pageable = PageRequest.of(0, limit);
     List<User> suggestFollowers = userRepository.findUserNotFollwedByUser(userId, pageable);
     List<Long> followersIds = followRepository.findFollowingUserIds(userId);
-    List<FollowResponseDTO> suggestFollowerUsers = new ArrayList<>();
+    List<FollowResponse> suggestFollowerUsers = new ArrayList<>();
     for (User user : suggestFollowers) {
       String message = followersIds.contains(user.getId()) ? "회원님을 팔로우중입니다" : "회원님을 위한 추천";
-      suggestFollowerUsers.add(new FollowResponseDTO(user, message, false));
+      suggestFollowerUsers.add(new FollowResponse(user, message, false));
     }
     return suggestFollowerUsers;
   }
@@ -77,27 +78,29 @@ public class FollowService {
     List<Long> followingUserIds = followPage.stream()
         .map(follow -> follow.getFollowing().getId())
         .collect(Collectors.toList());
-    List<FollowResponseDTO> followings = getFollowResponseDTOList(userId, followingUserIds, true, followPage);
+    List<FollowResponse> followings = getFollowResponseList(userId, followingUserIds, true, followPage);
     HashMap<String, Object> result = new HashMap<>();
     result.put("followings", followings);
     result.put("totalPages", followPage.getTotalPages());
     return result;
   }
 
+  // 팔로워 리스트
   public Map<String, Object> getFollowers(Long userId, Long targetUserId, String query, int page) {
     Pageable pageable = PageRequest.of(page - 1, 12);
     Page<Follow> followPage = followRepository.findFollowersByUserIdAndQuery(targetUserId, query, pageable);
     List<Long> followerUserIds = followPage.stream()
         .map(follow -> follow.getFollower().getId())
         .collect(Collectors.toList());
-    List<FollowResponseDTO> followings = getFollowResponseDTOList(userId, followerUserIds, false, followPage);
+    List<FollowResponse> followings = getFollowResponseList(userId, followerUserIds, false, followPage);
     HashMap<String, Object> result = new HashMap<>();
     result.put("followers", followings);
     result.put("totalPages", followPage.getTotalPages());
     return result;
   }
 
-  List<FollowResponseDTO> getFollowResponseDTOList(Long userId, List<Long> followUserIds, boolean isFollowing,
+  // FollowResponse 포맷
+  List<FollowResponse> getFollowResponseList(Long userId, List<Long> followUserIds, boolean isFollowing,
       Page<Follow> followPage) {
     List<Follow> followedUsers = followRepository.findFollowedUsers(userId, followUserIds);
     Set<Long> followedUserIds = followedUsers.stream()
@@ -106,7 +109,7 @@ public class FollowService {
     return followPage.stream().map(follow -> {
       User followUser = isFollowing ? follow.getFollowing() : follow.getFollower();
       Long followUserId = isFollowing ? follow.getFollowing().getId() : follow.getFollower().getId();
-      return new FollowResponseDTO(followUser, "", followedUserIds.contains(followUserId));
+      return new FollowResponse(followUser, "", followedUserIds.contains(followUserId));
     }).collect(Collectors.toList());
   }
 }

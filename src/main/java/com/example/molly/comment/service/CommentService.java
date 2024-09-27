@@ -27,6 +27,7 @@ public class CommentService {
   private final PostRepository postRepository;
   private final CommentRepository commentRepository;
 
+  // 댓글 생성
   @Transactional
   public CommentDTO createComment(Long userId, CommentRequest comment) {
     try {
@@ -45,9 +46,9 @@ public class CommentService {
     } catch (Exception e) {
       throw new RuntimeException("댓글 생성 중 오류가 발생했습니다.", e);
     }
-
   }
 
+  // 댓글 수정
   @Transactional
   public CommentDTO updateComment(Long userId, Long commentId, String content) {
     try {
@@ -57,9 +58,9 @@ public class CommentService {
     } catch (Exception e) {
       throw new RuntimeException("댓글 수정 중 오류가 발생했습니다.", e);
     }
-
   }
 
+  // 댓글 삭제
   @Transactional
   public void deleteComment(Long userId, Long commentId) {
     try {
@@ -68,13 +69,14 @@ public class CommentService {
     } catch (Exception e) {
       throw new RuntimeException("댓글 삭제 중 오류가 발생했습니다.", e);
     }
-
   }
 
+  // 대댓글 카운트
   public int getSubCommentCount(Long commentId) {
     return commentRepository.countByParentCommentId(commentId);
   }
 
+  // 댓글 리스트
   public CommentResponse getComment(Long userId, Long postId, int page) {
     int limit = 15;
     Pageable pageable = PageRequest.of(page - 1, limit);
@@ -83,6 +85,7 @@ public class CommentService {
     return new CommentResponse(commentList, commentPage.getTotalPages());
   }
 
+  // 대댓글 리스트
   public List<CommentDTO> getSubComment(Long commentId, int page) {
     int limit = 3;
     Pageable pageable = PageRequest.of(page - 1, limit);
@@ -92,6 +95,7 @@ public class CommentService {
     return getCommentDTOList(subCommentsPage);
   }
 
+  // 내가 작성한 댓글 리스트
   public List<CommentDTO> getMyComment(Long userId, Long postId) {
     List<Comment> comments = commentRepository.findByPostIdAndUserIdAndParentCommentIsNull(postId, userId);
     return comments.stream().map(comment -> {
@@ -100,6 +104,7 @@ public class CommentService {
     }).collect(Collectors.toList());
   }
 
+  // CommentDTO로 포맷
   List<CommentDTO> getCommentDTOList(Page<Comment> commentPage) {
     return commentPage.stream().map(comment -> {
       int count = getSubCommentCount(comment.getId());
@@ -107,6 +112,7 @@ public class CommentService {
     }).collect(Collectors.toList());
   }
 
+  // 댓글 존재 여부와 권한 확인
   Comment verifyCommentUser(Long commentId, Long userId) {
     Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("존재하지 않는 댓글입니다."));
     if (!comment.getUser().getId().equals(userId)) {
