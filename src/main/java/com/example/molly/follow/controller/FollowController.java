@@ -2,17 +2,13 @@ package com.example.molly.follow.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.example.molly.common.dto.PaginationResponse;
 import com.example.molly.common.util.SecurityUtil;
 import com.example.molly.follow.dto.FollowRequest;
 import com.example.molly.follow.dto.FollowResponse;
 import com.example.molly.follow.service.FollowService;
-
 import lombok.RequiredArgsConstructor;
-
 import java.util.List;
-import java.util.Map;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,7 +54,7 @@ public class FollowController {
       @RequestParam int page,
       @RequestParam("query") String keyword) {
     Long userId = SecurityUtil.getCurrentUserId();
-    Map<String, Object> result = followService.getFollowings(userId, targetUserId, keyword, page);
+    PaginationResponse<FollowResponse> result = followService.getFollowings(userId, targetUserId, keyword, page);
     return ResponseEntity.ok(result);
   }
 
@@ -68,7 +64,7 @@ public class FollowController {
       @RequestParam int page,
       @RequestParam("query") String keyword) {
     Long userId = SecurityUtil.getCurrentUserId();
-    Map<String, Object> result = followService.getFollowers(userId, targetUserId, keyword, page);
+    PaginationResponse<FollowResponse> result = followService.getFollowers(userId, targetUserId, keyword, page);
     return ResponseEntity.ok(result);
   }
 }

@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.molly.comment.dto.CommentDTO;
 import com.example.molly.comment.dto.CommentRequest;
-import com.example.molly.comment.dto.CommentResponse;
 import com.example.molly.comment.service.CommentService;
+import com.example.molly.common.dto.PaginationResponse;
 import com.example.molly.common.util.SecurityUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -64,7 +64,7 @@ public class CommentController {
   @GetMapping("/{postId}")
   public ResponseEntity<?> getComment(@PathVariable Long postId, @RequestParam int page) {
     Long userId = SecurityUtil.getCurrentUserId();
-    CommentResponse comments = commentService.getComment(userId, postId, page);
+    PaginationResponse<CommentDTO> comments = commentService.getComment(userId, postId, page);
     return ResponseEntity.ok(comments);
   }
 

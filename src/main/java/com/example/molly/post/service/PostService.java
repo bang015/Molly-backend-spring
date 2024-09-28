@@ -9,15 +9,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.example.molly.bookmark.entity.Bookmark;
 import com.example.molly.bookmark.repository.BookmarkRepository;
+import com.example.molly.common.dto.PaginationResponse;
 import com.example.molly.follow.repository.FollowRepository;
 import com.example.molly.like.entity.Like;
 import com.example.molly.like.repository.LikeRepository;
 import com.example.molly.post.dto.PostDTO;
-import com.example.molly.post.dto.PostListResponse;
 import com.example.molly.post.dto.PostResponse;
+import com.example.molly.post.dto.TagPaginationResponse;
 import com.example.molly.post.dto.UpdatePostRequest;
 import com.example.molly.post.entity.Post;
 import com.example.molly.post.entity.PostMedia;
@@ -114,47 +114,48 @@ public class PostService {
   }
 
   // 메인 게시물 리스트
-  public PostListResponse getMainPost(Long userId, int page, int limit) {
+  public PaginationResponse<PostDTO> getMainPost(Long userId, int page, int limit) {
     List<Long> followedUserIds = followRepository.findFollowerUserIds(userId);
     followedUserIds.add(userId);
     Pageable pageable = PageRequest.of(page - 1, limit);
     Page<Post> postPage = postRepository.findPostsByUserIds(followedUserIds, pageable);
     List<PostDTO> postList = getPostDTOList(postPage, userId);
-    return new PostListResponse(postList, postPage.getTotalPages());
+    return new PaginationResponse<PostDTO>(postList, postPage.getTotalPages());
   }
 
   // 추천 게시물 리스트
-  public PostListResponse getExplorePost(Long userId, int page, int limit) {
+  public PaginationResponse<PostDTO> getExplorePost(Long userId, int page, int limit) {
     List<Long> followedUserIds = followRepository.findFollowerUserIds(userId);
     followedUserIds.add(userId);
     Pageable pageable = PageRequest.of(page - 1, limit);
     Page<Post> postPage = postRepository.findPostsByUserIdsNotIn(followedUserIds, pageable);
     List<PostDTO> postList = getPostDTOList(postPage, userId);
-    return new PostListResponse(postList, postPage.getTotalPages());
+    return new PaginationResponse<PostDTO>(postList, postPage.getTotalPages());
   }
 
   // 유저 게시물 리스트
-  public PostListResponse getUserPost(Long userId, Long targetUserId, int page, int limit) {
+  public PaginationResponse<PostDTO> getUserPost(Long userId, Long targetUserId, int page, int limit) {
     Pageable pageable = PageRequest.of(page - 1, limit);
     Page<Post> postPage = postRepository.findPostsByUserId(targetUserId, pageable);
     List<PostDTO> postList = getPostDTOList(postPage, userId);
-    return new PostListResponse(postList, postPage.getTotalPages());
+    return new PaginationResponse<PostDTO>(postList, postPage.getTotalPages());
   }
 
   // 북마크 게시물 리스트
-  public PostListResponse getBookmarkPost(Long userId, Long targetUserId, int page, int limit) {
+  public PaginationResponse<PostDTO> getBookmarkPost(Long userId, Long targetUserId, int page, int limit) {
     Pageable pageable = PageRequest.of(page - 1, limit);
     Page<Post> postPage = bookmarkRepository.findBookmarkedPostsByUserId(targetUserId, pageable);
     List<PostDTO> postList = getPostDTOList(postPage, userId);
-    return new PostListResponse(postList, postPage.getTotalPages());
+    return new PaginationResponse<PostDTO>(postList, postPage.getTotalPages());
   }
 
-  public PostListResponse getTagPost(Long userId, String tagName, int page, int limit) {
+  // 태그 게시물 리스트
+  public TagPaginationResponse<PostDTO> getTagPost(Long userId, String tagName, int page, int limit) {
     Tag tag = tagRepository.findByName(tagName).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다."));
     Pageable pageable = PageRequest.of(page - 1, limit);
     Page<Post> postPage = postRepository.findPostsByTagName(tag.getName(), pageable);
     List<PostDTO> postList = getPostDTOList(postPage, userId);
-    return new PostListResponse(postList, postPage.getTotalPages(), postTagRepository.countByTag(tag));
+    return new TagPaginationResponse<PostDTO> (postList, postPage.getTotalPages(), postTagRepository.countByTag(tag));
   }
 
   // PostDTO 포맷

@@ -8,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.molly.comment.dto.CommentDTO;
 import com.example.molly.comment.dto.CommentRequest;
-import com.example.molly.comment.dto.CommentResponse;
 import com.example.molly.comment.entity.Comment;
 import com.example.molly.comment.repository.CommentRepository;
+import com.example.molly.common.dto.PaginationResponse;
 import com.example.molly.post.entity.Post;
 import com.example.molly.post.repository.PostRepository;
 import com.example.molly.user.entity.User;
@@ -77,12 +77,12 @@ public class CommentService {
   }
 
   // 댓글 리스트
-  public CommentResponse getComment(Long userId, Long postId, int page) {
+  public PaginationResponse<CommentDTO> getComment(Long userId, Long postId, int page) {
     int limit = 15;
     Pageable pageable = PageRequest.of(page - 1, limit);
     Page<Comment> commentPage = commentRepository.findRootCommentsExcludingUserAndReplies(postId, userId, pageable);
     List<CommentDTO> commentList = getCommentDTOList(commentPage);
-    return new CommentResponse(commentList, commentPage.getTotalPages());
+    return new PaginationResponse<CommentDTO>(commentList, commentPage.getTotalPages());
   }
 
   // 대댓글 리스트

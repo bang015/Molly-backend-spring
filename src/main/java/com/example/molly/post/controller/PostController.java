@@ -4,9 +4,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.molly.common.dto.PaginationResponse;
 import com.example.molly.common.util.SecurityUtil;
-import com.example.molly.post.dto.PostListResponse;
+import com.example.molly.post.dto.PostDTO;
 import com.example.molly.post.dto.PostResponse;
+import com.example.molly.post.dto.TagPaginationResponse;
 import com.example.molly.post.dto.UpdatePostRequest;
 import com.example.molly.post.service.PostService;
 
@@ -66,7 +68,7 @@ public class PostController {
   @GetMapping("/main")
   public ResponseEntity<?> getMainPosts(@RequestParam int page, @RequestParam(defaultValue = "5") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
-    PostListResponse postListResponse = postService.getMainPost(userId, page, limit);
+    PaginationResponse<PostDTO> postListResponse = postService.getMainPost(userId, page, limit);
     return ResponseEntity.ok(postListResponse);
   }
 
@@ -74,25 +76,26 @@ public class PostController {
   @GetMapping
   public ResponseEntity<?> getExplorePosts(@RequestParam int page, @RequestParam(defaultValue = "5") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
-    PostListResponse postListResponse = postService.getExplorePost(userId, page, limit);
+    PaginationResponse<PostDTO> postListResponse = postService.getExplorePost(userId, page, limit);
     return ResponseEntity.ok(postListResponse);
   }
 
   // 유저 게시물 리스트
-  @GetMapping("/my/{userId}")
+  @GetMapping("/my/{targetUserId}")
   public ResponseEntity<?> getUserPosts(@PathVariable Long targetUserId, @RequestParam int page,
       @RequestParam(defaultValue = "12") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
-    PostListResponse postListResponse = postService.getUserPost(userId, targetUserId, page, limit);
+    System.out.println(targetUserId);
+    PaginationResponse<PostDTO> postListResponse = postService.getUserPost(userId, targetUserId, page, limit);
     return ResponseEntity.ok(postListResponse);
   }
 
   // 북마크 게시물 리스트
-  @GetMapping("/bookmark/{userId}")
+  @GetMapping("/bookmark/{targetUserId}")
   public ResponseEntity<?> getBookmarkPosts(@PathVariable Long targetUserId, @RequestParam int page,
       @RequestParam(defaultValue = "12") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
-    PostListResponse postListResponse = postService.getBookmarkPost(userId, targetUserId, page, limit);
+    PaginationResponse<PostDTO> postListResponse = postService.getBookmarkPost(userId, targetUserId, page, limit);
     return ResponseEntity.ok(postListResponse);
   }
 
@@ -101,7 +104,7 @@ public class PostController {
   public ResponseEntity<?> getTagPosts(@PathVariable String tagName, @RequestParam int page,
       @RequestParam(defaultValue = "20") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
-    PostListResponse postListResponse = postService.getTagPost(userId, tagName, page, limit);
+    TagPaginationResponse<PostDTO> postListResponse = postService.getTagPost(userId, tagName, page, limit);
     return ResponseEntity.ok(postListResponse);
   }
 

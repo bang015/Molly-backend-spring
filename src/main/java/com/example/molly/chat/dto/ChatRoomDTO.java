@@ -11,7 +11,7 @@ import com.example.molly.user.dto.UserDTO;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatRoomsDTO {
+public class ChatRoomDTO {
   private Long roomId;
   private int unReadCount;
   private ChatMessageDTO latestMessage;

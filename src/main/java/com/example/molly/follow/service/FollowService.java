@@ -1,9 +1,7 @@
 package com.example.molly.follow.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import com.example.molly.common.dto.PaginationResponse;
 import com.example.molly.follow.dto.FollowResponse;
 import com.example.molly.follow.entity.Follow;
 import com.example.molly.follow.repository.FollowRepository;
@@ -72,31 +71,25 @@ public class FollowService {
   }
 
   // 팔로윙 리스트
-  public Map<String, Object> getFollowings(Long userId, Long targetUserId, String query, int page) {
+  public PaginationResponse<FollowResponse> getFollowings(Long userId, Long targetUserId, String query, int page) {
     Pageable pageable = PageRequest.of(page - 1, 12);
     Page<Follow> followPage = followRepository.findFollowingsByUserIdAndQuery(targetUserId, query, pageable);
     List<Long> followingUserIds = followPage.stream()
         .map(follow -> follow.getFollowing().getId())
         .collect(Collectors.toList());
     List<FollowResponse> followings = getFollowResponseList(userId, followingUserIds, true, followPage);
-    HashMap<String, Object> result = new HashMap<>();
-    result.put("followings", followings);
-    result.put("totalPages", followPage.getTotalPages());
-    return result;
+    return new PaginationResponse<FollowResponse>(followings, page);
   }
 
   // 팔로워 리스트
-  public Map<String, Object> getFollowers(Long userId, Long targetUserId, String query, int page) {
+  public PaginationResponse<FollowResponse> getFollowers(Long userId, Long targetUserId, String query, int page) {
     Pageable pageable = PageRequest.of(page - 1, 12);
     Page<Follow> followPage = followRepository.findFollowersByUserIdAndQuery(targetUserId, query, pageable);
     List<Long> followerUserIds = followPage.stream()
         .map(follow -> follow.getFollower().getId())
         .collect(Collectors.toList());
-    List<FollowResponse> followings = getFollowResponseList(userId, followerUserIds, false, followPage);
-    HashMap<String, Object> result = new HashMap<>();
-    result.put("followers", followings);
-    result.put("totalPages", followPage.getTotalPages());
-    return result;
+    List<FollowResponse> followers = getFollowResponseList(userId, followerUserIds, false, followPage);
+    return new PaginationResponse<FollowResponse>(followers, page);
   }
 
   // FollowResponse 포맷
