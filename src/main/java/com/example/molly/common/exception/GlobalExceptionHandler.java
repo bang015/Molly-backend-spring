@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler({ JwtException.class, SignatureException.class })
   public ResponseEntity<ErrorResponse> handleJwtException(JwtException ex) {
-    ErrorResponse errorResponse = new ErrorResponse("잘못된 토큰입니다.", HttpStatus.UNAUTHORIZED.value());
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    ErrorResponse errorResponse = new ErrorResponse("잘못된 토큰입니다.", HttpStatus.BAD_REQUEST.value());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
   }
 }

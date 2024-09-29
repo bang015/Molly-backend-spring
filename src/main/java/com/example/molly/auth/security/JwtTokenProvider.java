@@ -13,6 +13,8 @@ import com.example.molly.auth.dto.JwtToken;
 import com.example.molly.auth.service.CustomUserDetailsService;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -33,7 +35,7 @@ public class JwtTokenProvider {
     Claims claims = Jwts.claims().setSubject(userId.toString());
     long now = (new Date()).getTime();
     String accessToken = Jwts.builder().setClaims(claims)
-        .setExpiration(new Date(now + 8640000)).signWith(key).compact();
+        .setExpiration(new Date(now + 3600000)).signWith(key).compact();
     String refreshToken = Jwts.builder().setClaims(claims)
         .setExpiration(new Date(now + 7 * 8640000)).signWith(key).compact();
     return JwtToken.builder()
@@ -63,8 +65,10 @@ public class JwtTokenProvider {
     try {
       Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
       return true;
-    } catch (Exception e) {
-      return false;
+    } catch (ExpiredJwtException e) {
+      throw e; 
+    } catch (JwtException e) {
+      throw e; 
     }
   }
 }

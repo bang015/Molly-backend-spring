@@ -1,9 +1,14 @@
 package com.example.molly.auth.security;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+
 import java.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,16 +22,28 @@ public class JwtTokenFilter extends OncePerRequestFilter {
   private final JwtTokenProvider jwtTokenProvider;
 
   @Override
-  public void doFilterInternal(@NonNull HttpServletRequest requset, @NonNull HttpServletResponse response,
+  public void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
       @NonNull FilterChain chain)
       throws IOException, ServletException {
-    String token = resolveToken((HttpServletRequest) requset);
+    String token = resolveToken((HttpServletRequest) request);
 
-    if (token != null && jwtTokenProvider.validateToken(token)) {
-      Authentication authentication = jwtTokenProvider.getAuthentication(token);
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+    if (token != null) {
+      try {
+        if (jwtTokenProvider.validateToken(token)) {
+          Authentication authentication = jwtTokenProvider.getAuthentication(token);
+          SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+      } catch (ExpiredJwtException ex) {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.getWriter().write("기간이 만료된 토큰입니다."); 
+        return; 
+      } catch (JwtException ex) {
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.getWriter().write("잘못된 토큰입니다."); 
+        return; 
+      }
     }
-    chain.doFilter(requset, response);
+    chain.doFilter(request, response);
   }
 
   private String resolveToken(HttpServletRequest request) {

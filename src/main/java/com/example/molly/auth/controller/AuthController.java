@@ -81,12 +81,15 @@ public class AuthController {
   // 리프레쉬 토큰
   @PostMapping("/token")
   public ResponseEntity<?> refreshToken(@RequestBody JwtRequest jwtRequest) {
+    System.out.println("jwtRequest" +jwtRequest);
     if (!jwtTokenProvider.validateToken(jwtRequest.getRefreshToken())) {
       throw new JwtException("잘못된 토큰입니다.");
     }
     Claims claims = jwtTokenProvider.getClaims(jwtRequest.getRefreshToken());
+    System.out.println("claims" +claims);
     Long userId = Long.valueOf(claims.getSubject());
     JwtToken newTokens = jwtTokenProvider.generateToken(userId);
+    System.out.println("newTokens" +newTokens);
     return ResponseEntity.ok(newTokens);
   }
 

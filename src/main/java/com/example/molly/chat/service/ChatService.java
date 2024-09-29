@@ -16,7 +16,6 @@ import com.example.molly.chat.repository.ChatMessageRepository;
 import com.example.molly.chat.repository.ChatRoomRepository;
 import com.example.molly.chat.repository.MessageReadStatusRepository;
 import com.example.molly.common.dto.PaginationResponse;
-import com.example.molly.post.entity.Post;
 import com.example.molly.user.dto.UserDTO;
 import com.example.molly.user.entity.User;
 import com.example.molly.user.repository.UserRepository;
