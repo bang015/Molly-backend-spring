@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChatMessage extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "userId", nullable = false)
+  @JoinColumn(name = "userId", nullable = true)
   private User user;
 
   @ManyToOne(fetch = FetchType.LAZY)

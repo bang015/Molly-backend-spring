@@ -11,11 +11,12 @@ import com.example.molly.user.entity.User;
 public interface MessageReadStatusRepository extends JpaRepository<MessageReadStatus, Long> {
   @Query("SELECT COUNT(mrs) FROM MessageReadStatus mrs " +
       "WHERE mrs.message.room = :room " +
+      "AND mrs.user = :user " +
       "AND mrs.isRead = false")
-  int countUnreadMessageByRoom(@Param("room") ChatRoom room);
+  int countUnreadMessageByRoom(@Param("room") ChatRoom room, @Param("user") User user);
 
   @Query("SELECT COUNT(mrs) FROM MessageReadStatus mrs " +
-      "WHERE mrs.message.user = :user " +
+      "WHERE mrs.user = :user " +
       "AND mrs.isRead = false")
   int countUnreadMessageByUser(@Param("user") User user);
 }

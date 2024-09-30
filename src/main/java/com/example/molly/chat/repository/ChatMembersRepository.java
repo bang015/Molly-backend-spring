@@ -13,9 +13,11 @@ import com.example.molly.chat.entity.ChatRoom;
 import com.example.molly.user.entity.User;
 
 public interface ChatMembersRepository extends JpaRepository<ChatMembers, Long> {
-  @Query("SELECT cm.room FROM ChatMembers cm WHERE cm.user = :user")
+  @Query("SELECT cm.room FROM ChatMembers cm WHERE cm.user = :user AND cm.isActive = true")
   Page<ChatRoom> findChatRoomsByUser(@Param("user") User user, Pageable pageable);
 
   @Query("SELECT cm.user FROM ChatMembers cm WHERE cm.room = :room")
   List<User> findMembersByRoom(@Param("room") ChatRoom room);
+
+  
 }

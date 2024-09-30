@@ -11,6 +11,6 @@ import com.example.molly.user.dto.UserDTO;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatRoomDetailResponse {
-  private List<ChatMessageDTO> message;
+  private List<ChatMessageDTO> messages;
   private List<UserDTO> members;
 }

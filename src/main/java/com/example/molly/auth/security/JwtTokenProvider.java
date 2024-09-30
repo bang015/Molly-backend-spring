@@ -66,9 +66,22 @@ public class JwtTokenProvider {
       Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
       return true;
     } catch (ExpiredJwtException e) {
-      throw e; 
+      throw e;
     } catch (JwtException e) {
-      throw e; 
+      throw e;
+    }
+  }
+
+  public Long validateAndGetUserId(String token) {
+    if (token != null && token.startsWith("Bearer ")) {
+      token = token.substring(7);
+      if (validateToken(token)) {
+        return getUserIdFromToken(token);
+      } else {
+        throw new IllegalArgumentException("Invalid or expired token");
+      }
+    } else {
+      throw new IllegalArgumentException("Invalid token");
     }
   }
 }

@@ -33,11 +33,12 @@ public class ChatController {
     return ResponseEntity.ok(rooms);
   }
 
-  @GetMapping("/detail/{id}")
-  public ResponseEntity<?> getChatRoomMessages(@PathVariable Long id) {
+  @GetMapping("/details/{roomId}")
+  public ResponseEntity<?> getChatRoomMessages(@PathVariable Long roomId) {
     Long userId = SecurityUtil.getCurrentUserId();
-    List<ChatMessageDTO> messages = chatService.getChatRoomMessages(userId, id);
-    List<UserDTO> members = chatService.getJoinRoomMembers(userId, id);
+    System.out.println(roomId);
+    List<ChatMessageDTO> messages = chatService.getChatRoomMessages(userId, roomId);
+    List<UserDTO> members = chatService.getJoinRoomMembers(userId, roomId);
     return ResponseEntity.ok(new ChatRoomDetailResponse(messages, members));
   }
 

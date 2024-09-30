@@ -46,6 +46,8 @@ dependencies {
 
 	// Cloudinary Java SDK
   implementation 'com.cloudinary:cloudinary-http44:1.31.0'
+
+	implementation 'org.springframework.boot:spring-boot-starter-logging'
 }
 
 tasks.named('test') {
