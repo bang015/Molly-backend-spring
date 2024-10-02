@@ -1,13 +1,13 @@
-# 1. Base image
 FROM openjdk:17-jdk-slim AS build
 
 WORKDIR /app
 
 COPY build.gradle settings.gradle ./
-
-COPY gradle gradle
-
+COPY gradlew ./
+COPY gradle gradle/
 COPY src ./src
+
+RUN chmod +x gradlew
 
 RUN ./gradlew build --no-daemon
 
