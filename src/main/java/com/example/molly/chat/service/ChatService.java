@@ -97,7 +97,6 @@ public class ChatService {
       chatMessageRepository.save(sysMessage);
       entityManager.flush();
       List<UserDTO> members = getJoinRoomMembers(userId, roomId);
-      System.out.println("members: " + members);
       if (members.isEmpty()) {
         chatRoomRepository.delete(room);
         entityManager.flush();

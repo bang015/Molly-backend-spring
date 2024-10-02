@@ -33,7 +33,6 @@ public class WebsocketController {
     if (newChatRoom.getLatestMessage() != null) {
       request.add(new CreateChatRoomRequest(userId, ""));
       request.forEach((member) -> {
-        System.out.println("memberID : " + member.getId());
         messagingTemplate.convertAndSendToUser(member.getId().toString(), "/newMessage", newChatRoom);
       });
     }

@@ -33,8 +33,6 @@ public class UserController {
       @RequestParam(required = false) String introduce,
       @RequestParam(required = false) MultipartFile profileImage) {
     Long userId = SecurityUtil.getCurrentUserId();
-    System.out.println(newPassword);
-    System.out.println(currentPassword);
     if (profileImage != null) {
       UserDTO user = profileImageService.updateProfileImage(userId, profileImage);
       return ResponseEntity.ok(new UserResponse(user, "프로필이 수정되었습니다."));

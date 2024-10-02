@@ -55,7 +55,6 @@ public class SearchService {
     if (historyList != null) {
       for (String historyJson : historyList) {
         HistoryRequest storedHistory = objectMapper.readValue(historyJson, HistoryRequest.class);
-        System.out.println(storedHistory);
         if (storedHistory.getName().equals(historyRequest.getName())) {
           redisTemplate.opsForList().remove(redisKey, 1, historyJson);
           break;

@@ -41,10 +41,8 @@ public class FollowController {
   // 팔로우 상태 확인
   @GetMapping("/check/{targetUserId}")
   public ResponseEntity<?> isFollwed(@PathVariable Long targetUserId) {
-    System.out.println(targetUserId);
     Long userId = SecurityUtil.getCurrentUserId();
     boolean isFollowed = followService.isFollowed(userId, targetUserId);
-    System.out.println(isFollowed);
     return ResponseEntity.ok(isFollowed);
   }
 

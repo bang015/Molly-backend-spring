@@ -52,7 +52,6 @@ public class AuthController {
   // 비밀번호 재설정
   @PostMapping("/reset/password")
   public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request) {
-    System.out.println(request);
     authService.resetPassword(request);
     return ResponseEntity.ok("비밀번호 재설정을 성공했습니다.");
   }
@@ -96,7 +95,6 @@ public class AuthController {
   // 리프레쉬 토큰
   @PostMapping("/token")
   public ResponseEntity<?> refreshToken(@RequestBody JwtRequest jwtRequest) {
-    System.out.println("jwtRequest" + jwtRequest);
     if (!jwtTokenProvider.validateToken(jwtRequest.getRefreshToken())) {
       throw new JwtException("잘못된 토큰입니다.");
     }

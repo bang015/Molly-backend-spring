@@ -85,7 +85,6 @@ public class PostController {
   public ResponseEntity<?> getUserPosts(@PathVariable Long targetUserId, @RequestParam int page,
       @RequestParam(defaultValue = "12") int limit) {
     Long userId = SecurityUtil.getCurrentUserId();
-    System.out.println(targetUserId);
     PaginationResponse<PostDTO> postListResponse = postService.getUserPost(userId, targetUserId, page, limit);
     return ResponseEntity.ok(postListResponse);
   }

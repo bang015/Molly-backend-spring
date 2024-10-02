@@ -48,7 +48,6 @@ public class SearchController {
   public void deleteSearchHistory(@RequestBody(required = false)  HistoryRequest historyRequest)
       throws JsonMappingException, JsonProcessingException {
     Long userId = SecurityUtil.getCurrentUserId();
-    System.out.println(historyRequest);
     searchService.deleteSearchHistory(userId, historyRequest);
   }
 }

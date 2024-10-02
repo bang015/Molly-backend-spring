@@ -62,7 +62,6 @@ public class PostService {
       PostDTO postDTO = getPostDTO(post, userId);
       return new PostResponse(postDTO, "게시물이 공유 되었습니다");
     } catch (Exception e) {
-      System.out.println(e);
       for (PostMedia media : postMedias) {
         postMediaService.deletePostMedia(media.getName());
       }
@@ -84,7 +83,6 @@ public class PostService {
         postMediaService.deletePostMedia(media.getName());
       }
     } catch (Exception e) {
-      System.out.println(e);
       throw new RuntimeException("포스트 삭제 중 오류가 발생했습니다.", e);
     }
   }
@@ -108,7 +106,6 @@ public class PostService {
       PostDTO postDTO = getPostDTO(post, userId);
       return new PostResponse(postDTO, "게시물이 수정 되었습니다");
     } catch (Exception e) {
-      System.out.println(e);
       throw new RuntimeException("포스트 수정 중 오류가 발생했습니다.", e);
     }
   }

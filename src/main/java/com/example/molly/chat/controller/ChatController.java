@@ -36,7 +36,6 @@ public class ChatController {
   @GetMapping("/details/{roomId}")
   public ResponseEntity<?> getChatRoomMessages(@PathVariable Long roomId) {
     Long userId = SecurityUtil.getCurrentUserId();
-    System.out.println(roomId);
     List<ChatMessageDTO> messages = chatService.getChatRoomMessages(userId, roomId);
     List<UserDTO> members = chatService.getJoinRoomMembers(userId, roomId);
     return ResponseEntity.ok(new ChatRoomDetailResponse(messages, members));
