@@ -1,6 +1,7 @@
 package com.example.molly.chat.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,4 +20,8 @@ public interface MessageReadStatusRepository extends JpaRepository<MessageReadSt
       "WHERE mrs.user = :user " +
       "AND mrs.isRead = false")
   int countUnreadMessageByUser(@Param("user") User user);
+
+  @Modifying
+  @Query("DELETE FROM MessageReadStatus mrs WHERE mrs.user = :user AND mrs.message.room = :room AND mrs.isRead = false")
+  void deleteUnreadMessagesByUserAndRoom(@Param("user") User user, @Param("room") ChatRoom room);
 }

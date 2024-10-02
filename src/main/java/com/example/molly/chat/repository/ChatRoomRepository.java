@@ -7,7 +7,7 @@ import java.util.Optional;
 import com.example.molly.chat.entity.ChatRoom;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
-  @Query("SELECT c FROM ChatRoom c JOIN FETCH c.users cm JOIN FETCH cm.user u WHERE c.id = :roomId")
+  @Query("SELECT c FROM ChatRoom c LEFT JOIN FETCH c.users cm LEFT JOIN FETCH cm.user u WHERE c.id = :roomId")
   Optional<ChatRoom> findChatRoomWithUsers(@Param("roomId") Long roomId);
 
   @Query("SELECT r FROM ChatRoom r JOIN r.users m1 JOIN r.users m2 " +

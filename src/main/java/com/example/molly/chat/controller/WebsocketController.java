@@ -29,7 +29,6 @@ public class WebsocketController {
     String token = headerAccessor.getFirstNativeHeader("Authorization");
     Long userId = jwtTokenProvider.validateAndGetUserId(token);
     ChatRoomResponse newChatRoom = chatService.getOrCreateChatRoom(userId, request);
-    System.out.println(userId);
     messagingTemplate.convertAndSendToUser(userId.toString(), "/newChatRoom", newChatRoom);
     if (newChatRoom.getLatestMessage() != null) {
       request.add(new CreateChatRoomRequest(userId, ""));
@@ -48,17 +47,35 @@ public class WebsocketController {
     List<UserDTO> members = chatService.getJoinRoomMembers(userId,
         request.getRoomId());
     int unreadCount = chatService.getUnreadCountByChatRoom(request.getRoomId(), userId);
-    ChatRoomResponse newChatRoomInfo = new ChatRoomResponse(request.getRoomId(), newMessage, members, unreadCount);
     messagingTemplate.convertAndSend("/chat/" + request.getRoomId(), newMessage);
-    messagingTemplate.convertAndSendToUser(userId.toString(), "/newMessage", newChatRoomInfo);
-
     members.forEach(member -> {
+      int memberUnreadCount = chatService.getUnreadCountByChatRoom(request.getRoomId(), member.getId());
+      ChatRoomResponse memberChatRoomInfo = new ChatRoomResponse(request.getRoomId(), newMessage, members,
+          memberUnreadCount);
       messagingTemplate.convertAndSendToUser(member.getId().toString(),
-          "/newMessage", newChatRoomInfo);
+          "/newMessage", memberChatRoomInfo);
       messagingTemplate.convertAndSendToUser(member.getId().toString(),
           "/updateCount", unreadCount);
     });
-
   }
 
+  @MessageMapping("/messageRead")
+  public void messageRead(SendMessageRequest request, SimpMessageHeaderAccessor headerAccessor) {
+    String token = headerAccessor.getFirstNativeHeader("Authorization");
+    Long userId = jwtTokenProvider.validateAndGetUserId(token);
+    chatService.readMessage(request.getRoomId(), userId);
+  }
+
+  @MessageMapping("leaveChatRoom")
+  public void leaveChatRoom(SendMessageRequest request, SimpMessageHeaderAccessor headerAccessor) {
+    String token = headerAccessor.getFirstNativeHeader("Authorization");
+    Long userId = jwtTokenProvider.validateAndGetUserId(token);
+    ChatRoomResponse result  = chatService.leaveChatRoom(request.getRoomId(), userId);
+    if(result != null) {
+      result.getMembers().forEach(member -> {
+        messagingTemplate.convertAndSendToUser(member.getId().toString(),
+          "/memberLeft", result);
+      });
+    }
+  }
 }

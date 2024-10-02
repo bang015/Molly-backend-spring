@@ -25,4 +25,8 @@ public class ChatMembers extends BaseEntity {
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
   @Builder.Default
   private boolean isActive = false;
+
+  public void changeIsActive(boolean isActive){
+    this.isActive = isActive;
+  }
 }

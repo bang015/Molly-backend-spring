@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.molly.auth.dto.JwtRequest;
 import com.example.molly.auth.dto.JwtToken;
+import com.example.molly.auth.dto.PasswordResetRequest;
 import com.example.molly.auth.dto.SendEmailRequest;
 import com.example.molly.auth.dto.SignInRequest;
 import com.example.molly.auth.dto.SignUpRequest;
 import com.example.molly.auth.security.JwtTokenProvider;
 import com.example.molly.auth.service.AuthService;
-import com.example.molly.common.service.EmailService;
 import com.example.molly.user.entity.User;
 import com.example.molly.user.service.UserService;
 import io.jsonwebtoken.Claims;
@@ -31,15 +31,30 @@ public class AuthController {
   private final AuthService authService;
   private final UserService userService;
   private final AuthenticationManager authenticationManager;
-  private final EmailService emailService;
   private final JwtTokenProvider jwtTokenProvider;
 
   // 인증번호 생성 및 이메일 발송
   @PostMapping("/code")
   public ResponseEntity<String> sendVerificationEmail(@RequestBody SendEmailRequest sendEmailRequest) {
     String email = sendEmailRequest.getEmail();
-    authService.createVerificationCode(email, emailService);
+    authService.sendVerificationCode(email);
     return ResponseEntity.ok("인증번호를 보냈습니다.");
+  }
+
+  // 비밀번호 재설정 링크 발송
+  @PostMapping("/link")
+  public ResponseEntity<String> sendPasswordResetLink(@RequestBody SendEmailRequest sendEmailRequest) {
+    String email = sendEmailRequest.getEmail();
+    authService.sendPasswordResetLink(email);
+    return ResponseEntity.ok("비밀번호 재설정 링크를 보냈습니다.");
+  }
+
+  // 비밀번호 재설정
+  @PostMapping("/reset/password")
+  public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request) {
+    System.out.println(request);
+    authService.resetPassword(request);
+    return ResponseEntity.ok("비밀번호 재설정을 성공했습니다.");
   }
 
   // 회원가입
@@ -81,15 +96,13 @@ public class AuthController {
   // 리프레쉬 토큰
   @PostMapping("/token")
   public ResponseEntity<?> refreshToken(@RequestBody JwtRequest jwtRequest) {
-    System.out.println("jwtRequest" +jwtRequest);
+    System.out.println("jwtRequest" + jwtRequest);
     if (!jwtTokenProvider.validateToken(jwtRequest.getRefreshToken())) {
       throw new JwtException("잘못된 토큰입니다.");
     }
     Claims claims = jwtTokenProvider.getClaims(jwtRequest.getRefreshToken());
-    System.out.println("claims" +claims);
     Long userId = Long.valueOf(claims.getSubject());
     JwtToken newTokens = jwtTokenProvider.generateToken(userId);
-    System.out.println("newTokens" +newTokens);
     return ResponseEntity.ok(newTokens);
   }
 

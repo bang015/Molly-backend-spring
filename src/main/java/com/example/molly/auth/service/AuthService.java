@@ -1,8 +1,11 @@
 package com.example.molly.auth.service;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.molly.auth.dto.JwtToken;
+import com.example.molly.auth.dto.PasswordResetRequest;
 import com.example.molly.auth.dto.SignUpRequest;
 import com.example.molly.auth.entity.Verification;
 import com.example.molly.auth.repository.AuthRepository;
@@ -22,25 +25,46 @@ public class AuthService {
   private final AuthRepository authRepository;
   private final UserRepository userRepository;
   private final JwtTokenProvider jwtTokenProvider;
+  private final EmailService emailService;
+  private final PasswordEncoder passwordEncoder;
+  @Value("${app.req.address}")
+  private String reqAddress;
 
-  // 인증번호 생성
+  // 인증번호 생성 및 이메일 발송
   @Transactional
-  public void createVerificationCode(String email, EmailService emailService) {
-    String verificationCode = null;
+  public void sendVerificationCode(String email) {
     try {
-      authRepository.deleteByEmail(email);
-      verificationCode = UUID.randomUUID().toString().substring(0, 6);
-      Verification verification = Verification.builder().email(email).code(verificationCode).build();
-      authRepository.save(verification);
+      String verificationCode = createVerificationCode(email);
       String subject = "Your Verification Code";
       String text = "인증번호: " + verificationCode;
       emailService.sendVerificationEmail(email, subject, text);
     } catch (Exception e) {
-      if (verificationCode != null) {
-        authRepository.deleteByEmail(email);
-      }
       throw new RuntimeException("이메일 전송 중 오류가 발생했습니다.", e);
     }
+  }
+
+  // 인증번호 생성 및 이메일 링크 보내기
+  @Transactional
+  public void sendPasswordResetLink(String email) {
+    try {
+      String verificationCode = createVerificationCode(email);
+      String resetLink = reqAddress + "/auth/password/reset?code=" + verificationCode + "&email=" + email;
+      String subject = "비밀번호 재설정 요청";
+      String text = "<p>비밀번호를 재설정하려면 <a href=\"" + resetLink + "\">여기</a>를 클릭하세요.</p>";
+      emailService.sendVerificationEmail(email, subject, text);
+    } catch (Exception e) {
+      throw new RuntimeException("이메일 전송 중 오류가 발생했습니다.", e);
+    }
+  }
+
+  // 인증번호 생성
+  @Transactional
+  private String createVerificationCode(String email) {
+    authRepository.deleteByEmail(email);
+    String verificationCode = UUID.randomUUID().toString().substring(0, 6);
+    Verification verification = Verification.builder().email(email).code(verificationCode).build();
+    authRepository.save(verification);
+    return verificationCode;
   }
 
   // 인증번호 검증
@@ -69,7 +93,21 @@ public class AuthService {
       authRepository.deleteByEmail(signUpRequest.getEmail());
       return jwtTokenProvider.generateToken(user.getId());
     } catch (Exception e) {
-      throw new RuntimeException("회원가입에 실패했습니다.");
+      throw new RuntimeException("회원가입 중 오류가 발생했습니다.");
+    }
+  }
+
+  // 비밀번호 초기화
+  @Transactional
+  public void resetPassword(PasswordResetRequest request) {
+    verificationCode(request.getEmail(), request.getCode());
+    try {
+      User user = userRepository.findByEmail(request.getEmail())
+          .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+      user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+      authRepository.deleteByEmail(request.getEmail());
+    } catch (Exception e) {
+      throw new RuntimeException("비밀번호 재설정 중 오류가 발생했습니다.");
     }
   }
 }

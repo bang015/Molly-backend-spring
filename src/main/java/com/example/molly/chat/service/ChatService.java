@@ -28,6 +28,7 @@ import com.example.molly.user.dto.UserDTO;
 import com.example.molly.user.entity.User;
 import com.example.molly.user.repository.UserRepository;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -38,6 +39,7 @@ public class ChatService {
   private final ChatMessageRepository chatMessageRepository;
   private final UserRepository userRepository;
   private final MessageReadStatusRepository messageReadStatusRepository;
+  private final EntityManager entityManager;
 
   // 채팅방 생성
   @Transactional
@@ -63,9 +65,7 @@ public class ChatService {
     List<UserDTO> chatMembers = new ArrayList<>();
     for (Long memberId : allMembers) {
       ChatMembers newChatMembers = addMemberToRoom(newChatRoom, memberId, members.size() > 1);
-      if (!newChatMembers.getUser().getId().equals(userId)) {
-        chatMembers.add(new UserDTO(newChatMembers.getUser()));
-      }
+      chatMembers.add(new UserDTO(newChatMembers.getUser()));
     }
     // 단체 채팅이라면 시스템 메시지 생성
     if (members.size() > 1) {
@@ -80,6 +80,38 @@ public class ChatService {
       return new ChatRoomResponse(newChatRoom.getId(), new ChatMessageDTO(sysMessage), chatMembers, 0);
     }
     return new ChatRoomResponse(newChatRoom.getId(), null, null, 0);
+  }
+
+  // 채팅방 나가기
+  @Transactional
+  public ChatRoomResponse leaveChatRoom(Long roomId, Long userId) {
+    User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    ChatRoom room = verifyChatRoomUser(roomId, userId);
+    if (room.isGroupChat()) {
+      chatMembersRepository.deleteMembersByUserAndPost(user, room);
+      entityManager.flush();
+      entityManager.clear();
+      String systemMessageContent = user.getName() + " 님이 채팅방을 나갔습니다.";
+      ChatMessage sysMessage = ChatMessage.builder().user(null).room(room).type(MessageType.SYSTEM)
+          .message(systemMessageContent).build();
+      chatMessageRepository.save(sysMessage);
+      entityManager.flush();
+      List<UserDTO> members = getJoinRoomMembers(userId, roomId);
+      System.out.println("members: " + members);
+      if (members.isEmpty()) {
+        chatRoomRepository.delete(room);
+        entityManager.flush();
+        return null;
+      }
+      return new ChatRoomResponse(roomId, new ChatMessageDTO(sysMessage), members, 0);
+    } else {
+      room.getUsers().forEach(member -> {
+        if (member.getUser().equals(user)) {
+          member.changeIsActive(false);
+        }
+      });
+      return null;
+    }
   }
 
   // 채팅방 맴버 추가
@@ -110,11 +142,11 @@ public class ChatService {
     return room.getMessages().stream().map(ChatMessageDTO::new).collect(Collectors.toList());
   }
 
-  // 채팅방 참여맴버(본인 제외)
+  // 채팅방 참여맴버
   public List<UserDTO> getJoinRoomMembers(Long userId, Long roomId) {
-    ChatRoom room = verifyChatRoomUser(roomId, userId);
+    ChatRoom room = chatRoomRepository.findChatRoomWithUsers(roomId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
     return room.getUsers().stream()
-        .filter(member -> !member.getUser().getId().equals(userId))
         .map(user -> new UserDTO(user.getUser()))
         .collect(Collectors.toList());
   }
@@ -127,6 +159,10 @@ public class ChatService {
     ChatMessage newMessage = ChatMessage.builder().user(user).room(room).message(message).build();
     chatMessageRepository.save(newMessage);
     room.getUsers().forEach(member -> {
+      if (!member.isActive()) {
+        member.changeIsActive(true);
+        chatMembersRepository.save(member);
+      }
       if (!member.getUser().getId().equals(userId)) {
         MessageReadStatus newUnreadMessage = MessageReadStatus.builder().message(newMessage).user(member.getUser())
             .isRead(false).build();
@@ -150,6 +186,14 @@ public class ChatService {
     return messageReadStatusRepository.countUnreadMessageByRoom(room, user);
   }
 
+  // 메시지 읽음 처리
+  @Transactional
+  public void readMessage(Long roomId, Long userId) {
+    User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    ChatRoom room = verifyChatRoomUser(roomId, userId);
+    messageReadStatusRepository.deleteUnreadMessagesByUserAndRoom(user, room);
+  }
+
   // ChatRoomsDTO 포멧
   List<ChatRoomDTO> getChatRoomsDTOList(Page<ChatRoom> roomPage, User user) {
     return roomPage.stream().map(room -> {
@@ -157,7 +201,7 @@ public class ChatService {
       int unReadCount = messageReadStatusRepository.countUnreadMessageByRoom(room, user);
       ChatMessage latestMessage = chatMessageRepository.findTopByRoomOrderByCreatedAtDesc(room).orElse(null);
       List<UserDTO> members = chatMembersRepository.findMembersByRoom(room).stream()
-          .filter(member -> !member.getId().equals(user.getId())).map(UserDTO::new)
+          .map(UserDTO::new)
           .collect(Collectors.toList());
       return new ChatRoomDTO(roomId, unReadCount, new ChatMessageDTO(latestMessage), members);
     }).collect(Collectors.toList());

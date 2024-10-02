@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,5 +20,7 @@ public interface ChatMembersRepository extends JpaRepository<ChatMembers, Long> 
   @Query("SELECT cm.user FROM ChatMembers cm WHERE cm.room = :room")
   List<User> findMembersByRoom(@Param("room") ChatRoom room);
 
-  
+  @Modifying
+  @Query("DELETE FROM ChatMembers cm WHERE cm.user = :user AND cm.room = :room")
+  void deleteMembersByUserAndPost(@Param("user") User user, @Param("room") ChatRoom room);
 }
