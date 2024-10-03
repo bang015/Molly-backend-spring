@@ -17,35 +17,35 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-      
+
       - uses: mirromutth/mysql-action@v1.1
         with:
           host port: 3306
           container port: 3306
-          mysql database: 'testdb'
+          mysql database: "testdb"
           mysql root password: ${{ secrets.DB_PASSWORD }}
 
       - name: Make Gradle Wrapper executable
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        env:
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          MAIL_HOST: ${{ secrets.MAIL_HOST }}
-          MAIL_PORT: ${{ secrets.MAIL_PORT }}
-          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          REQ_ADDRESS: ${{ secrets.REQ_ADDRESS }}
-          CLOUDINARY_NAME: ${{ secrets.CLOUDINARY_NAME }}
-          CLOUDINARY_KEY: ${{ secrets.CLOUDINARY_KEY }}
-          CLOUDINARY_SECRET: ${{ secrets.CLOUDINARY_SECRET }}
         run: ./gradlew build -x test
 
       - name: Build and push Docker Image
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -t ${{ secrets.DOCKER_REPO }}/backend .
+          docker build \
+            --build-arg SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} \
+            --build-arg SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} \
+            --build-arg SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            --build-arg MAIL_HOST=${{ secrets.MAIL_HOST }} \
+            --build-arg MAIL_PORT=${{ secrets.MAIL_PORT }} \
+            --build-arg MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
+            --build-arg MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
+            --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            --build-arg REQ_ADDRESS=${{ secrets.REQ_ADDRESS }} \
+            --build-arg CLOUDINARY_NAME=${{ secrets.CLOUDINARY_NAME }} \
+            --build-arg CLOUDINARY_KEY=${{ secrets.CLOUDINARY_KEY }} \
+            --build-arg CLOUDINARY_SECRET=${{ secrets.CLOUDINARY_SECRET }} \
+            -t ${{ secrets.DOCKER_REPO }}/backend .
           docker push ${{ secrets.DOCKER_REPO }}/backend
