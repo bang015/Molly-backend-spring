@@ -31,7 +31,7 @@ ENV CLOUDINARY_KEY=$CLOUDINARY_KEY
 ENV CLOUDINARY_SECRET=$CLOUDINARY_SECRET
 
 # 4. 애플리케이션 jar 파일을 빌드 결과에서 복사
-COPY build/libs/myapp.jar /app/myapp.jar
+COPY build/libs/myapp.jar /app/molly-0.0.1-SNAPSHOT.jar
 EXPOSE 8080
 # 5. 애플리케이션 실행 명령어
-ENTRYPOINT ["java", "-jar", "/app/myapp.jar"]
+ENTRYPOINT ["java", "-jar", "/app/molly-0.0.1-SNAPSHOT.jar"]

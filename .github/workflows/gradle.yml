@@ -47,5 +47,5 @@ jobs:
             --build-arg CLOUDINARY_NAME=${{ secrets.CLOUDINARY_NAME }} \
             --build-arg CLOUDINARY_KEY=${{ secrets.CLOUDINARY_KEY }} \
             --build-arg CLOUDINARY_SECRET=${{ secrets.CLOUDINARY_SECRET }} \
-            -t ${{ secrets.DOCKER_REPO }}/backend .
+          docker build -t ${{ secrets.DOCKER_REPO }}/backend .
           docker push ${{ secrets.DOCKER_REPO }}/backend
