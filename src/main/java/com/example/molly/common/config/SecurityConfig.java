@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  @Value("${REQ_ADDRESS}")
+  @Value("${app.req.address}")
   private String reqAddress;
 
   private final UserDetailsService userDetailsService;

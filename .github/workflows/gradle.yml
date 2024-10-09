@@ -29,35 +29,20 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        env:
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          MAIL_HOST: ${{ secrets.MAIL_HOST }}
-          MAIL_PORT: ${{ secrets.MAIL_PORT }}
-          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          REQ_ADDRESS: ${{ secrets.REQ_ADDRESS }}
-          CLOUDINARY_NAME: ${{ secrets.CLOUDINARY_NAME }}
-          CLOUDINARY_KEY: ${{ secrets.CLOUDINARY_KEY }}
-          CLOUDINARY_SECRET: ${{ secrets.CLOUDINARY_SECRET }}
         run: ./gradlew build -x test
 
       - name: Build and push Docker Image
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build --build-arg SPRING_DATASOURCE_URL=${{ env.DB_URL }} \
-          --build-arg SPRING_DATASOURCE_USERNAME=${{ env.DB_USERNAME }} \
-          --build-arg SPRING_DATASOURCE_PASSWORD=${{ env.DB_PASSWORD }} \
-          --build-arg MAIL_HOST=${{ env.MAIL_HOST }} \
-          --build-arg MAIL_PORT=${{ env.MAIL_PORT }} \
-          --build-arg MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
-          --build-arg MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
-          --build-arg JWT_SECRET=${{ env.JWT_SECRET }} \
-          --build-arg REQ_ADDRESS=${{ env.REQ_ADDRESS }} \
-          --build-arg CLOUDINARY_NAME=${{ env.CLOUDINARY_NAME }} \
-          --build-arg CLOUDINARY_KEY=${{ env.CLOUDINARY_KEY }} \
-          --build-arg CLOUDINARY_SECRET=${{ env.CLOUDINARY_SECRET }} \
-          -t ${{ secrets.DOCKER_REPO }}/backend .
+          docker build -t ${{ secrets.DOCKER_REPO }}/backend .
           docker push ${{ secrets.DOCKER_REPO }}/backend
+      - name: SSH to EC2 and Update
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/Spring-Molly
+            sudo docker-compose pull
+            sudo docker-compose up -d
