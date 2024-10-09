@@ -39,6 +39,7 @@ public class AuthService {
       String text = "인증번호: " + verificationCode;
       emailService.sendVerificationEmail(email, subject, text);
     } catch (Exception e) {
+      System.out.println(e);
       throw new RuntimeException("이메일 전송 중 오류가 발생했습니다.", e);
     }
   }
@@ -53,6 +54,7 @@ public class AuthService {
       String text = "<p>비밀번호를 재설정하려면 <a href=\"" + resetLink + "\">여기</a>를 클릭하세요.</p>";
       emailService.sendVerificationEmail(email, subject, text);
     } catch (Exception e) {
+      System.out.println(e);
       throw new RuntimeException("이메일 전송 중 오류가 발생했습니다.", e);
     }
   }
