@@ -17,13 +17,6 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-      
-      - uses: mirromutth/mysql-action@v1.1
-        with:
-          host port: 3306
-          container port: 3306
-          mysql database: 'testdb'
-          mysql root password: ${{ secrets.DB_PASSWORD }}
 
       - name: Make Gradle Wrapper executable
         run: chmod +x gradlew

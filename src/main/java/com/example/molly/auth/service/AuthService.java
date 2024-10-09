@@ -27,7 +27,7 @@ public class AuthService {
   private final JwtTokenProvider jwtTokenProvider;
   private final EmailService emailService;
   private final PasswordEncoder passwordEncoder;
-  @Value("${app.req.address}")
+  @Value("${REQ_ADDRESS}")
   private String reqAddress;
 
   // 인증번호 생성 및 이메일 발송
