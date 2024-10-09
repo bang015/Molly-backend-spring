@@ -18,7 +18,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void configureMessageBroker(@NonNull MessageBrokerRegistry config) {
-    config.enableSimpleBroker("/chat", "/user");
+    config.enableSimpleBroker("/chat", "/user").setHeartbeatValue(new long[] { 10000, 10000 });
     config.setApplicationDestinationPrefixes("/app");
   }
 }
