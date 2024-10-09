@@ -7,6 +7,7 @@ import com.example.molly.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "`Verification`")
 public class Verification extends BaseEntity {
   @Column(nullable = false)
   @Email(message = "이메일 형식이 아닙니다.")

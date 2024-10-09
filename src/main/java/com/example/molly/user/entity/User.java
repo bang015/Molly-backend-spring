@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "`User`")
 public class User extends BaseEntity {
   @Column(nullable = false, unique = true)
   @Email(message = "Invalid email format")

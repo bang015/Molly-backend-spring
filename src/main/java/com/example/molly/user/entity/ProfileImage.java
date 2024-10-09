@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "`ProfileImage`")
 public class ProfileImage extends BaseEntity {
   @Column(nullable = false)
   private String name;

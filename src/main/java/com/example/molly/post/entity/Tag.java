@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "`Tag`")
 public class Tag extends BaseEntity {
   @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
