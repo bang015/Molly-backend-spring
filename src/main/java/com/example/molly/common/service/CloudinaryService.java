@@ -18,9 +18,9 @@ public class CloudinaryService {
   private final Cloudinary cloudinary;
 
   public CloudinaryService(
-      @Value("${cloudinary.cloud-name}") String cloudName,
-      @Value("${cloudinary.api-key}") String apiKey,
-      @Value("${cloudinary.api-secret}") String apiSecret) {
+      @Value("${CLOUDINARY_NAME}") String cloudName,
+      @Value("${CLOUDINARY_KEY}") String apiKey,
+      @Value("${CLOUDINARY_SECRET}") String apiSecret) {
     this.cloudinary = new Cloudinary(ObjectUtils.asMap(
         "cloud_name", cloudName,
         "api_key", apiKey,
