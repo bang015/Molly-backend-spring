@@ -93,7 +93,9 @@ public class AuthService {
     try {
       userRepository.save(user);
       authRepository.deleteByEmail(signUpRequest.getEmail());
-      return jwtTokenProvider.generateToken(user.getId());
+      String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
+      String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+      return JwtToken.builder().accessToken(accessToken).refreshToken(refreshToken).build();
     } catch (Exception e) {
       throw new RuntimeException("회원가입 중 오류가 발생했습니다.");
     }

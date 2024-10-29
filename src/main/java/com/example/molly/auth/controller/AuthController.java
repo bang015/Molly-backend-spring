@@ -1,5 +1,7 @@
 package com.example.molly.auth.controller;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +21,8 @@ import com.example.molly.user.entity.User;
 import com.example.molly.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,20 +62,27 @@ public class AuthController {
 
   // 회원가입
   @PostMapping("/up")
-  public ResponseEntity<?> signUp(@RequestBody SignUpRequest signUpRequest) {
+  public ResponseEntity<?> signUp(@RequestBody SignUpRequest signUpRequest, HttpServletResponse response) {
     JwtToken jwtToken = authService.createUser(signUpRequest);
-    return ResponseEntity.ok(jwtToken);
+    ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", jwtToken.getRefreshToken()).httpOnly(true)
+        .secure(true).path("/").maxAge(7 * 24 * 60 * 60).build();
+    response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+    return ResponseEntity.ok(jwtToken.getAccessToken());
   }
 
   // 로그인
   @PostMapping("/in")
-  public ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest) {
+  public ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest, HttpServletResponse response) {
     Authentication authentication = new UsernamePasswordAuthenticationToken(
         signInRequest.getEmail(), signInRequest.getPassword());
     Authentication authenticatedUser = authenticationManager.authenticate(authentication);
     Long userId = Long.valueOf(authenticatedUser.getName());
-    JwtToken jwtToken = jwtTokenProvider.generateToken(userId);
-    return ResponseEntity.ok(jwtToken);
+    String accessToken = jwtTokenProvider.generateAccessToken(userId);
+    String refreshToken = jwtTokenProvider.generateRefreshToken(userId);
+    ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true)
+        .secure(true).path("/").maxAge(7 * 24 * 60 * 60).build();
+    response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+    return ResponseEntity.ok(accessToken);
   }
 
   // 이메일/닉네임 중복 체크
@@ -94,13 +105,14 @@ public class AuthController {
 
   // 리프레쉬 토큰
   @PostMapping("/token")
-  public ResponseEntity<?> refreshToken(@RequestBody JwtRequest jwtRequest) {
-    if (!jwtTokenProvider.validateToken(jwtRequest.getRefreshToken())) {
+  public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    String refreshToken = jwtTokenProvider.getRefreshTokenFromCookie(request);
+    if (!jwtTokenProvider.validateToken(refreshToken)) {
       throw new JwtException("잘못된 토큰입니다.");
     }
-    Claims claims = jwtTokenProvider.getClaims(jwtRequest.getRefreshToken());
+    Claims claims = jwtTokenProvider.getClaims(refreshToken);
     Long userId = Long.valueOf(claims.getSubject());
-    JwtToken newTokens = jwtTokenProvider.generateToken(userId);
+    String newTokens = jwtTokenProvider.generateAccessToken(userId);
     return ResponseEntity.ok(newTokens);
   }
 

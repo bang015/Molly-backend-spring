@@ -35,12 +35,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
       } catch (ExpiredJwtException ex) {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.getWriter().write("기간이 만료된 토큰입니다."); 
-        return; 
+        response.getWriter().write("기간이 만료된 토큰입니다.");
+        return;
       } catch (JwtException ex) {
         response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.getWriter().write("잘못된 토큰입니다."); 
-        return; 
+        response.getWriter().write("잘못된 토큰입니다.");
+        return;
       }
     }
     chain.doFilter(request, response);

@@ -9,7 +9,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import com.example.molly.auth.dto.JwtToken;
 import com.example.molly.auth.service.CustomUserDetailsService;
 
 import io.jsonwebtoken.Claims;
@@ -18,6 +17,8 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class JwtTokenProvider {
@@ -31,18 +32,18 @@ public class JwtTokenProvider {
     this.key = Keys.hmacShaKeyFor(keyBytes);
   }
 
-  public JwtToken generateToken(Long userId) {
+  public String generateAccessToken(Long userId) {
     Claims claims = Jwts.claims().setSubject(userId.toString());
     long now = (new Date()).getTime();
-    String accessToken = Jwts.builder().setClaims(claims)
-        .setExpiration(new Date(now + 3600000)).signWith(key).compact();
-    String refreshToken = Jwts.builder().setClaims(claims)
+    return Jwts.builder().setClaims(claims)
+        .setExpiration(new Date(now + 60000)).signWith(key).compact();
+  }
+
+  public String generateRefreshToken(Long userId) {
+    Claims claims = Jwts.claims().setSubject(userId.toString());
+    long now = (new Date()).getTime();
+    return Jwts.builder().setClaims(claims)
         .setExpiration(new Date(now + 7 * 8640000)).signWith(key).compact();
-    return JwtToken.builder()
-        .grantType("Bearer")
-        .accessToken(accessToken)
-        .refreshToken(refreshToken)
-        .build();
   }
 
   public Authentication getAuthentication(String accessToken) {
@@ -83,5 +84,18 @@ public class JwtTokenProvider {
     } else {
       throw new IllegalArgumentException("Invalid token");
     }
+  }
+
+  public String getRefreshTokenFromCookie(HttpServletRequest request) {
+    Cookie[] cookies = request.getCookies();
+
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if ("refreshToken".equals(cookie.getName())) {
+          return cookie.getValue();
+        }
+      }
+    }
+    return null;
   }
 }

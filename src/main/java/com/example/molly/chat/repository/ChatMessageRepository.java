@@ -8,6 +8,6 @@ import com.example.molly.chat.entity.ChatMessage;
 import com.example.molly.chat.entity.ChatRoom;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
-  
+  // 가장 최근 메시지
   Optional<ChatMessage> findTopByRoomOrderByCreatedAtDesc(ChatRoom room);
 }

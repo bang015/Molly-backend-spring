@@ -87,6 +87,8 @@ public class ChatService {
   public ChatRoomResponse leaveChatRoom(Long roomId, Long userId) {
     User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
     ChatRoom room = verifyChatRoomUser(roomId, userId);
+
+    // 단체 채팅방이라면 유저가 나갔다는 시스템메시지 생성 및 나간 후 참여 맴버 반환
     if (room.isGroupChat()) {
       chatMembersRepository.deleteMembersByUserAndPost(user, room);
       entityManager.flush();
@@ -97,6 +99,7 @@ public class ChatService {
       chatMessageRepository.save(sysMessage);
       entityManager.flush();
       List<UserDTO> members = getJoinRoomMembers(userId, roomId);
+      // 채팅방의 맴버가 모두 나갔다면 채팅방 삭제
       if (members.isEmpty()) {
         chatRoomRepository.delete(room);
         entityManager.flush();
@@ -104,6 +107,7 @@ public class ChatService {
       }
       return new ChatRoomResponse(roomId, new ChatMessageDTO(sysMessage), members, 0);
     } else {
+      // 개인 채팅방이라면 해당 유저 상태를 비활성으로 변경
       room.getUsers().forEach(member -> {
         if (member.getUser().equals(user)) {
           member.changeIsActive(false);
