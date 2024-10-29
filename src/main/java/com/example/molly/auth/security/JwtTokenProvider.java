@@ -36,7 +36,7 @@ public class JwtTokenProvider {
     Claims claims = Jwts.claims().setSubject(userId.toString());
     long now = (new Date()).getTime();
     return Jwts.builder().setClaims(claims)
-        .setExpiration(new Date(now + 60000)).signWith(key).compact();
+        .setExpiration(new Date(now + 600000)).signWith(key).compact();
   }
 
   public String generateRefreshToken(Long userId) {
