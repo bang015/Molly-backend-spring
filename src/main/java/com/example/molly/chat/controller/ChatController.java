@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ChatController {
   private final ChatService chatService;
 
+  // 채팅방 목록 가져오기
   @GetMapping()
   public ResponseEntity<?> getChatRooms(@RequestParam int page) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -33,6 +34,7 @@ public class ChatController {
     return ResponseEntity.ok(rooms);
   }
 
+  // 채팅방의 메시지들 가져오기
   @GetMapping("/details/{roomId}")
   public ResponseEntity<?> getChatRoomMessages(@PathVariable Long roomId) {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -41,6 +43,7 @@ public class ChatController {
     return ResponseEntity.ok(new ChatRoomDetailResponse(messages, members));
   }
 
+  // 전체 읽지 않은 메시지 개수 가져오기
   @GetMapping("/unread")
   public ResponseEntity<?> getUnreadCount() {
     Long userId = SecurityUtil.getCurrentUserId();

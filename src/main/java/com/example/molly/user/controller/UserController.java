@@ -45,7 +45,7 @@ public class UserController {
   @GetMapping("/me")
   public ResponseEntity<?> getMyInfo() {
     Long userId = SecurityUtil.getCurrentUserId();
-    UserDTO userDto = userService.getUser(userId);
+    UserDTO userDto = userService.getUserDTO(userId);
     return ResponseEntity.ok(userDto);
   }
 

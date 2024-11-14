@@ -20,6 +20,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
+// 토큰을 생성하거나 검증하는 Provider
 @Component
 public class JwtTokenProvider {
   private final Key key;
@@ -32,6 +33,7 @@ public class JwtTokenProvider {
     this.key = Keys.hmacShaKeyFor(keyBytes);
   }
 
+  // 엑세스 토큰 생성
   public String generateAccessToken(Long userId) {
     Claims claims = Jwts.claims().setSubject(userId.toString());
     long now = (new Date()).getTime();
@@ -39,6 +41,7 @@ public class JwtTokenProvider {
         .setExpiration(new Date(now + 600000)).signWith(key).compact();
   }
 
+  // 리프레쉬 토큰 생성
   public String generateRefreshToken(Long userId) {
     Claims claims = Jwts.claims().setSubject(userId.toString());
     long now = (new Date()).getTime();
@@ -46,6 +49,7 @@ public class JwtTokenProvider {
         .setExpiration(new Date(now + 7 * 8640000)).signWith(key).compact();
   }
 
+  // 토큰으로 Authentication 객체 생성 후 반환
   public Authentication getAuthentication(String accessToken) {
     Claims claims = getClaims(accessToken);
     Long userId = Long.valueOf(claims.getSubject());
@@ -53,15 +57,18 @@ public class JwtTokenProvider {
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
   }
 
+  // 토큰에서 userId를 추출
   public Long getUserIdFromToken(String accessToken) {
     Claims claims = getClaims(accessToken);
     return Long.valueOf(claims.getSubject());
   }
 
+  // 토큰에서 Claims을 추출
   public Claims getClaims(String token) {
     return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
   }
 
+  // 토큰 검증
   public boolean validateToken(String token) {
     try {
       Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
@@ -73,19 +80,8 @@ public class JwtTokenProvider {
     }
   }
 
-  public Long validateAndGetUserId(String token) {
-    if (token != null && token.startsWith("Bearer ")) {
-      token = token.substring(7);
-      if (validateToken(token)) {
-        return getUserIdFromToken(token);
-      } else {
-        throw new IllegalArgumentException("Invalid or expired token");
-      }
-    } else {
-      throw new IllegalArgumentException("Invalid token");
-    }
-  }
-
+  // 리프레쉬 토큰은 쿠키로 관리한다
+  // 쿠키에서 리프레쉬 토큰 추출
   public String getRefreshTokenFromCookie(HttpServletRequest request) {
     Cookie[] cookies = request.getCookies();
 

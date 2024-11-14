@@ -29,6 +29,7 @@ public class SearchService {
   private final ObjectMapper objectMapper;
 
   public List<Object> search(String keyword, String type) {
+    // 타입에 따라 유저, 태그 또는 둘다 검색
     if (type.equalsIgnoreCase("user")) {
       return userRepository.searchUsersByKeyword(keyword).stream().map(UserSearchDTO::new).collect(Collectors.toList());
     } else if (type.equalsIgnoreCase("tag")) {

@@ -27,13 +27,17 @@ public class CloudinaryService {
         "api_secret", apiSecret));
   }
 
+  // cloudinary에 이미지 저장
   @SuppressWarnings("unchecked")
   public Map<String, Object> upload(MultipartFile file, String purpose) throws IOException {
     Random random = new Random();
     Map<String, Object> params = new HashMap<>();
+    // 저장할 폴더를 설정 (프로필 또는 게시물)
     params.put("folder", "/" + purpose);
+    // 현재날짜와 랜덤 숫자를 섞어 id 설정
     params.put("public_id", LocalDateTime.now() + String.valueOf(random.nextInt((int) Math.pow(10, 10))));
 
+    // 게시물일 경우 이미지 사이즈를 동일하게 수정한다
     if ("post".equals(purpose)) {
       params = ObjectUtils.asMap(
           "eager", Arrays.asList(
@@ -43,6 +47,7 @@ public class CloudinaryService {
     return cloudinary.uploader().upload(file.getBytes(), params);
   }
 
+  // cloudinary에 저장된 이미지 삭제
   public void delete(String publicId) throws IOException {
     cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
   }

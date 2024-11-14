@@ -1,6 +1,7 @@
 package com.example.molly.user.entity;
 
 import java.util.List;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.molly.bookmark.entity.Bookmark;
@@ -10,6 +11,8 @@ import com.example.molly.common.BaseEntity;
 import com.example.molly.follow.entity.Follow;
 import com.example.molly.like.entity.Like;
 import com.example.molly.post.entity.Post;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -22,6 +25,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "posts", "bookmarks", "comments", "following", "followers", "chatRooms", "likedPosts"})
 @Table(name = "`User`")
 public class User extends BaseEntity {
   @Column(nullable = false, unique = true)
@@ -95,4 +99,6 @@ public class User extends BaseEntity {
   public void updateProfileImage(ProfileImage profileImage) {
     this.profileImage = profileImage;
   }
+
+  
 }

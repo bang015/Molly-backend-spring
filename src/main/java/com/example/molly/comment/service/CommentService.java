@@ -10,35 +10,39 @@ import com.example.molly.comment.dto.CommentDTO;
 import com.example.molly.comment.dto.CommentRequest;
 import com.example.molly.comment.entity.Comment;
 import com.example.molly.comment.repository.CommentRepository;
+import com.example.molly.common.dto.BaseCountDTO;
 import com.example.molly.common.dto.PaginationResponse;
 import com.example.molly.post.entity.Post;
-import com.example.molly.post.repository.PostRepository;
+import com.example.molly.post.service.PostService;
 import com.example.molly.user.entity.User;
-import com.example.molly.user.repository.UserRepository;
+import com.example.molly.user.service.UserService;
 
 import java.util.List;
+import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CommentService {
-  private final UserRepository userRepository;
-  private final PostRepository postRepository;
+  private final UserService userService;
+  private final PostService postService;
   private final CommentRepository commentRepository;
 
   // 댓글 생성
   @Transactional
   public CommentDTO createComment(Long userId, CommentRequest comment) {
     try {
-      User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
-      Post post = postRepository.findById(comment.getPostId())
-          .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물입니다."));
+      User user = userService.getUser(userId);
+      Post post = postService.getPost(comment.getPostId());
       Comment parentComment = null;
+      // 대댓글 여부 확인
       if (comment.getCommentId() != null) {
         parentComment = commentRepository.findById(comment.getCommentId())
             .orElseThrow(() -> new RuntimeException("존재하지 않는 댓글입니다."));
       }
+      // 댓글 생성
       Comment newComment = Comment.builder().post(post).user(user).parentComment(parentComment)
           .content(comment.getContent()).build();
       commentRepository.save(newComment);
@@ -52,6 +56,7 @@ public class CommentService {
   @Transactional
   public CommentDTO updateComment(Long userId, Long commentId, String content) {
     try {
+      // 댓글 존재여부, 권한 확인
       Comment comment = verifyCommentUser(commentId, userId);
       comment.updateContent(content);
       return new CommentDTO(comment, getSubCommentCount(commentId));
@@ -98,16 +103,24 @@ public class CommentService {
   // 내가 작성한 댓글 리스트
   public List<CommentDTO> getMyComment(Long userId, Long postId) {
     List<Comment> comments = commentRepository.findByPostIdAndUserIdAndParentCommentIsNull(postId, userId);
+    List<Long> commentIds = comments.stream().map(Comment::getId).collect(Collectors.toList());
+    List<BaseCountDTO> counts = commentRepository.countByParentCommentIds(commentIds);
+    Map<Long, Long> countMap = counts.stream().collect(Collectors.toMap(BaseCountDTO::getId, BaseCountDTO::getCount));
     return comments.stream().map(comment -> {
-      int count = getSubCommentCount(comment.getId());
+      long count = countMap.getOrDefault(comment.getId(), 0L);
       return new CommentDTO(comment, count);
     }).collect(Collectors.toList());
   }
 
   // CommentDTO로 포맷
   List<CommentDTO> getCommentDTOList(Page<Comment> commentPage) {
+    List<Long> commentIds = commentPage.stream().map(Comment::getId).collect(Collectors.toList());
+    // 댓글들의 대댓글 수
+    List<BaseCountDTO> counts = commentRepository.countByParentCommentIds(commentIds);
+    Map<Long, Long> countMap = counts.stream().collect(Collectors.toMap(BaseCountDTO::getId, BaseCountDTO::getCount));
     return commentPage.stream().map(comment -> {
-      int count = getSubCommentCount(comment.getId());
+      // 해당 댓글과 대댓글 수 매치
+      long count = countMap.getOrDefault(comment.getId(), 0L);
       return new CommentDTO(comment, count);
     }).collect(Collectors.toList());
   }

@@ -14,15 +14,15 @@ import com.example.molly.user.entity.User;
 public interface PostRepository extends JpaRepository<Post, Long> {
   Long countByUser(User user);
 
-  @Query("SELECT p FROM Post p WHERE p.user.id IN :userIds ORDER BY p.createdAt DESC")
+  @Query("SELECT p FROM Post p JOIN FETCH p.user u  LEFT JOIN FETCH u.profileImage WHERE p.user.id IN :userIds ORDER BY p.createdAt DESC")
   Page<Post> findPostsByUserIds(@Param("userIds") List<Long> userIds, Pageable pageable);
 
-  @Query("SELECT p FROM Post p WHERE p.user.id NOT IN :excludedUserIds ORDER BY p.createdAt DESC")
+  @Query("SELECT p FROM Post p JOIN FETCH p.user u  LEFT JOIN FETCH u.profileImage WHERE p.user.id NOT IN :excludedUserIds ORDER BY p.createdAt DESC")
   Page<Post> findPostsByUserIdsNotIn(@Param("excludedUserIds") List<Long> excludedUserIds, Pageable pageable);
 
-  @Query("SELECT p FROM Post p WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
+  @Query("SELECT p FROM Post p JOIN FETCH p.user u  LEFT JOIN FETCH u.profileImage WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
   Page<Post> findPostsByUserId(@Param("userId") Long userId, Pageable pageable);
 
-  @Query("SELECT p FROM Post p JOIN p.postTags pt JOIN pt.tag t WHERE t.name = :tagName")
+  @Query("SELECT p FROM Post p JOIN FETCH p.user u  LEFT JOIN FETCH u.profileImage JOIN p.postTags pt JOIN pt.tag t WHERE t.name = :tagName")
   Page<Post> findPostsByTagName(@Param("tagName") String tagName, Pageable pageable);
 }

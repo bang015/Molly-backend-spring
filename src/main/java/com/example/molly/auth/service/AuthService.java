@@ -34,12 +34,13 @@ public class AuthService {
   @Transactional
   public void sendVerificationCode(String email) {
     try {
+      // 인증번호 생성
       String verificationCode = createVerificationCode(email);
       String subject = "Your Verification Code";
       String text = "인증번호: " + verificationCode;
+      // 이메일 전송
       emailService.sendVerificationEmail(email, subject, text);
     } catch (Exception e) {
-      System.out.println(e);
       throw new RuntimeException("이메일 전송 중 오류가 발생했습니다.", e);
     }
   }
@@ -48,13 +49,14 @@ public class AuthService {
   @Transactional
   public void sendPasswordResetLink(String email) {
     try {
+      // 인증번호 생성
       String verificationCode = createVerificationCode(email);
       String resetLink = reqAddress + "/auth/password/reset?code=" + verificationCode + "&email=" + email;
       String subject = "비밀번호 재설정 요청";
       String text = "<p>비밀번호를 재설정하려면 <a href=\"" + resetLink + "\">여기</a>를 클릭하세요.</p>";
+      // 이메일 전송
       emailService.sendVerificationEmail(email, subject, text);
     } catch (Exception e) {
-      System.out.println(e);
       throw new RuntimeException("이메일 전송 중 오류가 발생했습니다.", e);
     }
   }
@@ -62,9 +64,11 @@ public class AuthService {
   // 인증번호 생성
   @Transactional
   private String createVerificationCode(String email) {
+    // 기존 인증번호 삭제
     authRepository.deleteByEmail(email);
     String verificationCode = UUID.randomUUID().toString().substring(0, 6);
     Verification verification = Verification.builder().email(email).code(verificationCode).build();
+    // 인증번호 저장
     authRepository.save(verification);
     return verificationCode;
   }
@@ -87,12 +91,17 @@ public class AuthService {
   // 회원가입
   @Transactional
   public JwtToken createUser(SignUpRequest signUpRequest) {
+    // 인증번호 검증
     verificationCode(signUpRequest.getEmail(), signUpRequest.getCode());
+    // 유저 생성
     User user = User.builder().email(signUpRequest.getEmail()).name(signUpRequest.getName())
         .nickname(signUpRequest.getNickname()).password(signUpRequest.getPassword()).build();
     try {
+      // 유저 정보 저장
       userRepository.save(user);
+      // 인증번호 삭제
       authRepository.deleteByEmail(signUpRequest.getEmail());
+      // 토큰 생성
       String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
       String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
       return JwtToken.builder().accessToken(accessToken).refreshToken(refreshToken).build();

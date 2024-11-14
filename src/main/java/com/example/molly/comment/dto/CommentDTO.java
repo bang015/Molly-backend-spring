@@ -13,11 +13,11 @@ public class CommentDTO {
   private Long commentId;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
-  private int subCommentsCount;
+  private long subCommentsCount;
   private Long postId;
   private UserDTO user;
 
-  public CommentDTO(Comment comment, int count) {
+  public CommentDTO(Comment comment, long count) {
     this.id = comment.getId();
     this.content = comment.getContent();
     this.commentId = comment.getParentComment() != null ? comment.getParentComment().getId() : null;

@@ -8,11 +8,13 @@ import org.springframework.data.repository.query.Param;
 import com.example.molly.bookmark.entity.Bookmark;
 import com.example.molly.post.entity.Post;
 import java.util.List;
+import java.util.Set;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
   boolean existsByUserIdAndPostId(Long userId, Long postId);
 
-  List<Bookmark> findByUserIdAndPostIdIn(Long userId, List<Long> postIds);
+  @Query("SELECT b.post.id FROM Bookmark b WHERE b.user.id = :userId AND b.post.id IN :postIds")
+  Set<Long> findByUserIdAndPostIdIn(@Param("userId") Long userId, @Param("postIds") List<Long> postIds);
 
   void deleteByUserIdAndPostId(Long userId, Long postId);
 

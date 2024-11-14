@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.molly.common.service.RedisService;
 import com.example.molly.follow.repository.FollowRepository;
 import com.example.molly.post.repository.PostRepository;
 import com.example.molly.user.dto.UserCountsDTO;
@@ -21,6 +22,7 @@ public class UserService {
   private final PostRepository postRepository;
   private final FollowRepository followRepository;
   private final PasswordEncoder passwordEncoder;
+  private final RedisService redisService;
 
   // 이메일로 유저 찾기
   public User findUserByEmail(String email) {
@@ -34,9 +36,19 @@ public class UserService {
     return user;
   }
 
-  // 유저 정보
-  public UserDTO getUser(Long userId) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("유저 정보를 찾지 못했습니다."));
+  // 유저 정보 캐싱
+  public User getUser(Long userId) {
+    User user = redisService.get("getUser-userId:" + userId, User.class);
+    if (user == null) {
+      user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("유저 정보를 찾지 못했습니다."));
+      redisService.save("getUser-userId:" + userId, user);
+    }
+    return user;
+  }
+
+  // 유저 DTO
+  public UserDTO getUserDTO(Long userId) {
+    User user = getUser(userId);
     UserDTO userDto = new UserDTO(user);
     UserCountsDTO counts = calculateUserCounts(user);
     userDto.setPostCount(counts.getPostCount());
@@ -63,6 +75,7 @@ public class UserService {
       if (newPassword != null && passwordEncoder.matches(currentPassword, user.getPassword())) {
         user.updatePassword(passwordEncoder.encode(newPassword));
       }
+      redisService.delete("getUser-userId:" + userId);
       return new UserDTO(user);
     } catch (Exception e) {
       throw new RuntimeException("프로필 수정 중 오류가 발생했습니다.");

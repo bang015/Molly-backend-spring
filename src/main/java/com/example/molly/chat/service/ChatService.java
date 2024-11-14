@@ -26,7 +26,7 @@ import com.example.molly.chat.repository.MessageReadStatusRepository;
 import com.example.molly.common.dto.PaginationResponse;
 import com.example.molly.user.dto.UserDTO;
 import com.example.molly.user.entity.User;
-import com.example.molly.user.repository.UserRepository;
+import com.example.molly.user.service.UserService;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -37,16 +37,20 @@ public class ChatService {
   private final ChatRoomRepository chatRoomRepository;
   private final ChatMembersRepository chatMembersRepository;
   private final ChatMessageRepository chatMessageRepository;
-  private final UserRepository userRepository;
+  private final UserService userService;
   private final MessageReadStatusRepository messageReadStatusRepository;
   private final EntityManager entityManager;
 
   // 채팅방 생성
   @Transactional
   public ChatRoomResponse getOrCreateChatRoom(Long userId, List<CreateChatRoomRequest> members) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    User user = userService.getUser(userId);
+    // 본인을 제외한 맴버가 1명 즉 개인 채팅방일 경우
+    // 채팅방을 한번 생성하면 채팅방을 나가더라도 삭제되지 않고 유지 되기 때문에
+    // 일전에 만들어둔 채팅방이 있는지 확인 후 생성한다
     if (members.size() == 1) {
       Optional<ChatRoom> existingRoom = chatRoomRepository.findPrivateRoom(userId, members.get(0).getId());
+      // 채팅방이 존재한다면 ChatRoomResponse를 반환
       if (existingRoom.isPresent()) {
         return new ChatRoomResponse(existingRoom.get().getId(), null, null, 0);
       }
@@ -85,7 +89,7 @@ public class ChatService {
   // 채팅방 나가기
   @Transactional
   public ChatRoomResponse leaveChatRoom(Long roomId, Long userId) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    User user = userService.getUser(userId);
     ChatRoom room = verifyChatRoomUser(roomId, userId);
 
     // 단체 채팅방이라면 유저가 나갔다는 시스템메시지 생성 및 나간 후 참여 맴버 반환
@@ -120,7 +124,7 @@ public class ChatService {
   // 채팅방 맴버 추가
   private ChatMembers addMemberToRoom(ChatRoom chatRoom, Long userId, boolean isActive) {
     ChatMembers chatMember = ChatMembers.builder()
-        .user(userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다.")))
+        .user(userService.getUser(userId))
         .room(chatRoom)
         .isActive(isActive)
         .build();
@@ -132,7 +136,7 @@ public class ChatService {
   public PaginationResponse<ChatRoomDTO> getChatRooms(Long userId, int page) {
     int limit = 15;
     PageRequest pageable = PageRequest.of(page - 1, limit);
-    User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    User user = userService.getUser(userId);
 
     Page<ChatRoom> roomPage = chatMembersRepository.findChatRoomsByUser(user, pageable);
     List<ChatRoomDTO> rooms = getChatRoomsDTOList(roomPage, user);
@@ -157,15 +161,20 @@ public class ChatService {
   // 메시지 생성
   @Transactional
   public ChatMessageDTO sendMessage(Long userId, Long roomId, String message) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    User user = userService.getUser(userId);
+    // 채팅방 존재여부, 권한 확인
     ChatRoom room = verifyChatRoomUser(roomId, userId);
+    // 메시지 생성
     ChatMessage newMessage = ChatMessage.builder().user(user).room(room).message(message).build();
     chatMessageRepository.save(newMessage);
     room.getUsers().forEach(member -> {
+      // 개인 채팅방 경우 처음 생성하거나 상대가 나가면 상태가 비활성이기 때문에
+      // 메시지를 보내면 상태를 활성으로 변경
       if (!member.isActive()) {
         member.changeIsActive(true);
         chatMembersRepository.save(member);
       }
+      // 메시지의 읽음 상태 생성
       if (!member.getUser().getId().equals(userId)) {
         MessageReadStatus newUnreadMessage = MessageReadStatus.builder().message(newMessage).user(member.getUser())
             .isRead(false).build();
@@ -177,7 +186,7 @@ public class ChatService {
 
   // 전체 읽지 않은 메시지 카운트
   public int getUnreadCount(Long userId) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    User user = userService.getUser(userId);
     return messageReadStatusRepository.countUnreadMessageByUser(user);
   }
 
@@ -185,24 +194,29 @@ public class ChatService {
   public int getUnreadCountByChatRoom(Long roomId, Long userId) {
     ChatRoom room = chatRoomRepository.findById(roomId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
-    User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    User user = userService.getUser(userId);
     return messageReadStatusRepository.countUnreadMessageByRoom(room, user);
   }
 
   // 메시지 읽음 처리
   @Transactional
   public void readMessage(Long roomId, Long userId) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    User user = userService.getUser(userId);
     ChatRoom room = verifyChatRoomUser(roomId, userId);
     messageReadStatusRepository.deleteUnreadMessagesByUserAndRoom(user, room);
   }
 
   // ChatRoomsDTO 포멧
+  // 메시지를 보낼 때 해당 채팅방의 전체 읽지 않은 메시지 수, 최근 메시지, 참여 맴버 정보를 보내
+  // 채팅방 목록을 업데이트함
   List<ChatRoomDTO> getChatRoomsDTOList(Page<ChatRoom> roomPage, User user) {
     return roomPage.stream().map(room -> {
       Long roomId = room.getId();
+      // 읽지 않은 메시지 수
       int unReadCount = messageReadStatusRepository.countUnreadMessageByRoom(room, user);
+      // 최근 메시지
       ChatMessage latestMessage = chatMessageRepository.findTopByRoomOrderByCreatedAtDesc(room).orElse(null);
+      // 채팅방 참여 맴버
       List<UserDTO> members = chatMembersRepository.findMembersByRoom(room).stream()
           .map(UserDTO::new)
           .collect(Collectors.toList());

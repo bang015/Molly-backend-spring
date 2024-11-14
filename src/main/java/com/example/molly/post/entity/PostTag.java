@@ -1,6 +1,7 @@
 package com.example.molly.post.entity;
 
 import com.example.molly.common.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -20,6 +21,7 @@ import lombok.NoArgsConstructor;
 public class PostTag extends BaseEntity {
   @ManyToOne
   @JoinColumn(name = "postId")
+  @JsonBackReference
   private Post post;
 
   @ManyToOne
